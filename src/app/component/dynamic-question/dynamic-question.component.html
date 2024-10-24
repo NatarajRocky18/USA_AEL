@@ -1,0 +1,72 @@
+<div class="example-container">
+
+    @if(questionloaded){
+    <form [formGroup]="options">
+        @for (items of questions; track $index;let i =$index) {
+        <!-- To show only current screen id Question and to elmeinate other-->
+        @if (i==currentQuestionIndex) {
+        <!-- take all the field and group it based on screen-->
+        @for (item of items; track $index;let first =$first) {
+        <!-- Display for 1 only-->
+        @if(first){
+        <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] : questions[i][0]?.['prompt']
+            }}</p>
+        }
+
+        <ng-container
+            *ngIf=" item.question_type === 'text' || item.question_type === 'address' || item.question_type === 'email' || item.question_type === 'phone'">
+            <mat-form-field style="width: 300px;">
+                <mat-label>{{item?.['field prompt'] }}</mat-label>
+                <input matInput formControlName="{{item?.['question_id']}}" />
+            </mat-form-field>
+        </ng-container>
+
+        <ng-container *ngIf="item.question_type === 'date'">
+            <mat-form-field style="width: 300px;">
+                <mat-label>{{item?.['field prompt'] }}</mat-label>
+                <input matInput [matDatepicker]="picker" placeholder="Choose a date"
+                    formControlName="{{item?.['question_id']}}" />
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-hint>MM/DD/YYYY</mat-hint>
+            </mat-form-field>
+        </ng-container>
+
+        <ng-container *ngIf="item.question_type === 'summary'">
+            <div class="summary-card">
+                <h2 class="summary-title"> Summary</h2>
+                <div class="key-value-container">
+
+                    @for (item of profileDetails; track $index) {
+                        <div class="key-value-entry">
+                            <span class="key">{{ item.label | titlecase }}</span>
+                            <span class="value"> {{ item.value }}</span>
+                        </div>
+                        }
+
+                    <div class="submit-details-heading">
+                        <p>Do you submit your details ?</p>
+                    </div>
+                    <div class="cancel-confirm-button">
+                        <button mat-flat-button color="warn" class="cancel-button">
+                            Cancel
+                        </button> &nbsp;
+                        <button mat-flat-button color="primary" class="confirm-button">
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+        }
+        }
+        }
+
+    </form>
+    }
+    <div class="next-button">
+        <button class="previous-button" mat-button (click)="prevQuestion()"
+            *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
+        <button class="next-buttons" mat-flat-button (click)="nextQuestion()" *ngIf="!isLastQuestion()">Next</button>
+    </div>
+</div>

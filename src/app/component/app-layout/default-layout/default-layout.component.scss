@@ -1,0 +1,47 @@
+.layout-container {
+    display: flex;
+  
+    
+  }
+  
+  .left-sidebar {
+    width: 25%; /* Left sidebar takes 25% of the width */
+  
+  }
+  
+  .center-content {
+    width: 50%;
+    padding: 10px; 
+  }
+  
+  .right-sidebar {
+    width: 25%;
+    
+  }
+  
+  .body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin-left: 15rem;
+    z-index: 0;
+    position: relative;
+    top: 0;
+    transition: all 0.5s ease;
+    background: white;
+  }
+  
+  .body-trimmed {
+    margin-left: 20rem;
+  }
+  
+  .body-md-screen {
+    width: 86%;
+    margin-left: 14rem;
+  }
+  
+  .default {
+    width: 100%;
+    margin: 0; 
+  }
+  

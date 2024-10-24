@@ -1,0 +1,184 @@
+.example-container mat-form-field+mat-form-field {
+    margin-left: 8px;
+    padding-left: 20px;
+
+}
+
+.example-container mat-form-field {
+    padding-left: 30px;
+}
+
+.example-container form {
+    margin-bottom: 20px;
+}
+
+.example-container .mat-radio-button {
+    margin: 0 12px;
+}
+
+.example-form-fields {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: 80px;
+}
+
+.example-label {
+    display: table-cell;
+    font-size: 14px;
+    margin-left: 8px;
+    min-width: 120px;
+}
+
+p {
+    display: flex;
+    margin-left: 30px;
+
+}
+
+.next-button {
+    display: flex;
+    justify-content: flex-end;
+    width: 75%;
+
+}
+
+.name-container {
+    padding: 10px;
+}
+
+
+.cancel-confirm-button {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 200px;
+    margin: 20px auto;
+}
+
+button.cancel-button {
+    background-color: #dbd6f1;
+    color: black;
+    border-radius: 20px;
+    // padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    height: 50px;
+    width: 90px;
+}
+
+button.confirm-button {
+    background-color:#d7ebe9;
+    color: black;
+    border-radius: 20px;
+    // padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    height: 50px;
+    width: 90px;
+}
+
+.value {
+    color: #2c3e50;
+    font-size: 17px;
+}
+
+.summary-card {
+    background-color: #eaecf0;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px;
+    max-width: 600px;
+
+}
+
+.summary-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.key-value-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.key-value-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+
+}
+
+.key-value-entry:last-child {
+    border-bottom: none;
+}
+
+.key {
+    font-weight: 500;
+    min-width: 50%;
+    max-width: 50%;
+}
+
+.value {
+    min-width: 50%;
+    max-width: 50%;
+}
+
+.previous-button {
+    background-color: #eee7ff !important;
+    color: #323232 !important;
+    height: 50px;
+    width: 90px;
+    border: none;
+    border-radius: 10px;
+}
+
+.next-buttons {
+    background-color: #eafcf7 !important;
+    color: #323232 !important;
+    height: 50px;
+    width: 90px;
+    border: none;
+    border-radius: 10px;
+}
+
+.submit-details-heading {
+    margin: 0 auto;
+}
+
+.summary-container {
+
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.key-value-pair {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+
+}
+
+.key {
+    font-weight: 500;
+    color: #333;
+    flex: 0 0 40%;
+}
+
+.value {
+    color: #555;
+}
+
+.enabled-button {
+    background-color: #eafcf7 !important;
+}
+
+.disabled-button {
+    background-color: #d3d3d3 !important;
+    color: #a9a9a9 !important;
+    cursor: not-allowed;
+}
