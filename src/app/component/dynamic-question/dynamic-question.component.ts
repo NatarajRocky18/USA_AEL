@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { SharedService } from '../../services/shared.service';
@@ -17,15 +17,27 @@ export class DynamicQuestionComponent {
   showSummaryScreenAdd = false;
   currentQuestionIndex = 0;
   profileDetails: any = [];
-  
+  @Input() formDetails: any
+  sectionId: number = 1
+
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
-
   }
+
+  ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes["formDetails"].currentValue) {
+      this.sectionId = changes["formDetails"].currentValue.section_id
+      this.getQuestionsAndAnswer()
+    }
+  }
+
   questionloaded = false;
   //get question api function
   getQuestionsAndAnswer(): void {
-    this.dataService.questionsAndAnswer().subscribe((data) => {
+    console.log(this.formDetails);
+
+    this.dataService.questionsAndAnswer(this.sectionId).subscribe((data) => {
 
       if (data && data.questions) {
         this.options = new FormGroup({});
@@ -57,11 +69,8 @@ export class DynamicQuestionComponent {
     this.dataService.postTextAnswer(screenId, answers).subscribe((response) => {
       console.log(response);
       if (response.section_info.current_section_status === 'finished' && !this.showSummaryScreenAdd) {
-
         this.showSummaryScreenAdd = true;
-
         this.questions.push([{ question_type: "summary" }])
-
       }
       console.warn(this.profileDetails, "yyyyyyyyyy");
 
@@ -105,15 +114,43 @@ export class DynamicQuestionComponent {
 
           if (currentSummaryvalue) {
             currentSummaryvalue['value'] = value || '';
-  
+
             console.log("Question Details:", currentSummaryvalue);
+
           } else {
             console.warn(`No matching entry found for ${key} in profiledetails`);
           }
-          result.push({
-            question_id: key,
-            text_answer: value
-          });
+
+          // handle the different payload types based on the question type
+
+          let answerData: { [key: string]: any } = { question_id: key }
+
+          const question = questions.find((q:any)=>q.question_id.toString() === key)
+
+          if(question){
+        
+          if(question.question_type === 'text'||question.question_type === 'date'||question.question_type === 'email'||question.question_type === 'phone'){
+            answerData ['text_answer'] = value ;
+          } else if (question.question_type === 'radioGroup'){
+            answerData ['selected_option_id'] = value ;
+          } else if (question.question_type === 'checkboxGroup'){
+            if(Array.isArray(value  )){
+              answerData ['selected_option_ids'] = value.filter ((v:any)=>v); 
+            } else {
+                console.warn (`Expected array for checkboxGroup question but got ${typeof value}`)
+            }
+          } else {
+            answerData['text_answer'] = value ;
+          }
+
+           result.push(answerData)
+
+          }
+
+          // result.push({
+          //   question_id: key,
+          //   text_answer: value
+          // });
         }
       }
       return result;
@@ -125,6 +162,6 @@ export class DynamicQuestionComponent {
   }
 
   isLastQuestion(): boolean {
-    return this.currentQuestionIndex === this.questions.length - 1;
+    return this.currentQuestionIndex === this.questions.length;
   }
 }

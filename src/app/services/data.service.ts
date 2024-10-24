@@ -18,9 +18,13 @@ export class DataService {
   }
 
 
-  // get question value api 
-  questionsAndAnswer(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}assistant/questions-and-answers/1`)
+  // get question and option api 
+  // questionsAndAnswer(): Observable<any> {
+  //   return this.http.get<any>(`${this.apiUrl}assistant/questions-and-answers/1`)
+  // }
+
+  questionsAndAnswer(section_id :number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}assistant/questions-and-answers/${section_id}`)
   }
 
   //post text, date, enail, phone answer value api 

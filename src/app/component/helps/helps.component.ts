@@ -23,7 +23,7 @@ export class HelpsComponent {
   }
 
   getQuestionsAndAnswer(): void {
-    this.dataService.questionsAndAnswer().subscribe((data) => {
+    this.dataService.questionsAndAnswer(1).subscribe((data) => {
 
       if (data) {
         this.questions = data.questions;

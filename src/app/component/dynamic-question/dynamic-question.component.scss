@@ -182,3 +182,7 @@ button.confirm-button {
     color: #a9a9a9 !important;
     cursor: not-allowed;
 }
+.checkbox-column{
+    display: flex;
+    flex-direction: column;
+}

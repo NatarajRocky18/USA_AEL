@@ -14,4 +14,13 @@ export class SharedService {
   questionHelpUpdate(section: string) {
     this.question_help.next(section);
   }
+
+  private section_status = new Subject<any>();
+  sectionValue$ = this.section_status.asObservable();
+
+  sectionValueUpdate(sectionIdNumber: any) { 
+    
+     this.section_status.next(sectionIdNumber);
+  }
+  
 }

@@ -9,8 +9,8 @@
         @for (item of items; track $index;let first =$first) {
         <!-- Display for 1 only-->
         @if(first){
-        <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] : questions[i][0]?.['prompt']
-            }}</p>
+        <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] :
+            questions[i][0]?.['prompt']}}</p>
         }
 
         <ng-container
@@ -20,6 +20,26 @@
                 <input matInput formControlName="{{item?.['question_id']}}" />
             </mat-form-field>
         </ng-container>
+
+        <ng-container *ngIf="item.question_type === 'radioGroup'">
+            <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option">
+                <mat-radio-button *ngFor="let option of item.options" [value]="option.option_id">
+                    {{ option.option_text }}
+                </mat-radio-button>
+            </mat-radio-group>
+        </ng-container>
+
+
+        <ng-container *ngIf="item.question_type === 'checkboxGroup'">
+            <div formGroupName="{{ item.question_id }}">
+                <div class="checkbox-column">
+                    <mat-checkbox *ngFor="let option of item.options" [formControlName]="option.option_id">
+                        {{ option.option_text }}
+                    </mat-checkbox>
+                </div>
+            </div>
+        </ng-container>
+
 
         <ng-container *ngIf="item.question_type === 'date'">
             <mat-form-field style="width: 300px;">
@@ -38,11 +58,11 @@
                 <div class="key-value-container">
 
                     @for (item of profileDetails; track $index) {
-                        <div class="key-value-entry">
-                            <span class="key">{{ item.label | titlecase }}</span>
-                            <span class="value"> {{ item.value }}</span>
-                        </div>
-                        }
+                    <div class="key-value-entry">
+                        <span class="key">{{ item.label | titlecase }}</span>
+                        <span class="value"> {{ item.value }}</span>
+                    </div>
+                    }
 
                     <div class="submit-details-heading">
                         <p>Do you submit your details ?</p>
