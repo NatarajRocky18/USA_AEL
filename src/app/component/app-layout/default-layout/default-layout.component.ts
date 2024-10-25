@@ -10,10 +10,5 @@ import { RouterModule } from '@angular/router';
 })
 export class DefaultLayoutComponent {
 
-  sidenavData: any
-  GetSideNavData(event: any) {
-    this.sidenavData = event
-    console.log(event);
 
-  }
 }

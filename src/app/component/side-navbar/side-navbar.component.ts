@@ -8,13 +8,10 @@ import { SharedService } from '../../services/shared.service';
   styleUrl: './side-navbar.component.scss'
 })
 export class SideNavbarComponent {
- 
-  constructor(private dataService: DataService , private sharedService: SharedService) { }
-  @Output() SideNavData = new EventEmitter();
-  ngOnInit(): void {
-    // this.sectionId 
-    this.getSectionProgress();
 
+  constructor(private dataService: DataService, private sharedService: SharedService) { }
+  ngOnInit(): void {
+    this.getSectionProgress();
   }
 
   sectionProgressData: any[] = [];
@@ -22,10 +19,6 @@ export class SideNavbarComponent {
   getSectionProgress(): void {
     this.dataService.sectionProgress().subscribe((data) => {
       this.sectionProgressData = data;
-      console.log(this.sectionProgressData);
-      
-      // let obj = {"section_id":section_id}
-      // this.SideNavData.emit(obj);
       console.warn(this.sectionProgressData);
 
     }, (error) => {
@@ -33,25 +26,25 @@ export class SideNavbarComponent {
 
     })
   }
-  
-  questionAndOptionsData:any =[]
-  getSectionQuestionAndOptions(section_id:number): void {
-    // this.sectionId =section_id 
 
-    let obj = {"section_id":section_id, "tgh": this}
-    this.SideNavData.emit(obj);
-    console.log(section_id);
+  questionAndOptionsData: any = []
+  getSectionQuestionAndOptions(section: any, index: number): void {
+    console.log(section);
 
-     this.sharedService.sectionValueUpdate(section_id);
-     
-     
-    
-     this.dataService.questionsAndAnswer(section_id).subscribe((data=>{
-        this.questionAndOptionsData = data;
-        console.log(this.questionAndOptionsData);
-        
-     }))
+    let nextIndex: number = index + 1
+    let nextScreenSectionId: any = this.sectionProgressData[nextIndex]?.section_id ?? "no index"
+    console.log("Next Screen Section Id ", nextScreenSectionId);
+
+    let obj = { "current_section_id": section.section_id, "next_sectionId": nextScreenSectionId }
+    this.sharedService.sectionValueUpdate(obj);
+
+
+    this.dataService.questionsAndAnswer(section.section_id).subscribe((data => {
+      this.questionAndOptionsData = data;
+      console.log(this.questionAndOptionsData);
+
+    }))
   }
-  
+
 
 }

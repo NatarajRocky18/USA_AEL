@@ -18,9 +18,9 @@ export class SharedService {
   private section_status = new Subject<any>();
   sectionValue$ = this.section_status.asObservable();
 
-  sectionValueUpdate(sectionIdNumber: any) { 
-    
-     this.section_status.next(sectionIdNumber);
+  sectionValueUpdate(sections: any) {
+
+    this.section_status.next(sections);
   }
-  
+
 }

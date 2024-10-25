@@ -17,30 +17,33 @@ export class DynamicQuestionComponent {
   showSummaryScreenAdd = false;
   currentQuestionIndex = 0;
   profileDetails: any = [];
-  @Input() formDetails: any
-  sectionId: number = 1
+  NextScreenSectionId :any=null;
+  section_number: number = 1;
 
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
-  }
+    this.sharedService.sectionValue$.subscribe((sections: any) => {
+      console.log("SECTION DETAILS:", sections);
+      this.section_number = sections.current_section_id;
+      this.NextScreenSectionId = null
+      this.getQuestionsAndAnswer();
+      this.profileDetails = [];
+      this.showSummaryScreenAdd = false;
 
-  ngOnChanges(changes: SimpleChanges): void {
+    }); 
 
-    if (changes["formDetails"].currentValue) {
-      this.sectionId = changes["formDetails"].currentValue.section_id
-      this.getQuestionsAndAnswer()
-    }
-  }
+  } 
+
 
   questionloaded = false;
   //get question api function
   getQuestionsAndAnswer(): void {
-    console.log(this.formDetails);
 
-    this.dataService.questionsAndAnswer(this.sectionId).subscribe((data) => {
+    this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
 
       if (data && data.questions) {
-        this.options = new FormGroup({});
+        // this.options = new FormGroup({});
+        this.options = this.formBuilder.group({});
         const objvalue = _.groupBy(data.questions, 'screen_id')
         this.questions = Object.values(objvalue)
         data.questions.forEach((field: any) => {
@@ -49,7 +52,16 @@ export class DynamicQuestionComponent {
           value['label'] = field?.['field prompt']
           value['value'] = ""
           this.profileDetails.push(value)
-          this.options.addControl(field?.['question_id'], new FormControl())
+          // this.options.addControl(field?.['question_id'], new FormControl())
+          if (field.question_type === 'checkboxGroup') {
+            const checkboxArray = this.formBuilder.array(
+              field.options.map((option: any) => new FormControl())
+            );
+            this.options.addControl(field.question_id.toString(), checkboxArray);
+          } else {
+
+            this.options.addControl(field.question_id.toString(), new FormControl());
+          }
         });
         console.warn('sssfsfsf', this.questions);
         console.warn(this.options);
@@ -68,12 +80,18 @@ export class DynamicQuestionComponent {
   saveAnswerValue(screenId: string, answers: any[]) {
     this.dataService.postTextAnswer(screenId, answers).subscribe((response) => {
       console.log(response);
+      this.NextScreenSectionId =response?.['section_info']['next_section'] || null
+      console.log(response?.['section_info']['next_section']);
+      console.log(this.NextScreenSectionId);
+      if(response.questions_changed=="yes"){
+        this.showSummaryScreenAdd = false;
+        this.getQuestionsAndAnswer()
+      }
       if (response.section_info.current_section_status === 'finished' && !this.showSummaryScreenAdd) {
         this.showSummaryScreenAdd = true;
         this.questions.push([{ question_type: "summary" }])
       }
       console.warn(this.profileDetails, "yyyyyyyyyy");
-
 
     }, error => {
       console.error('Error submitting answer:', error);
@@ -125,25 +143,31 @@ export class DynamicQuestionComponent {
 
           let answerData: { [key: string]: any } = { question_id: key }
 
-          const question = questions.find((q:any)=>q.question_id.toString() === key)
+          const question = questions.find((q: any) => q.question_id.toString() === key)
 
-          if(question){
-        
-          if(question.question_type === 'text'||question.question_type === 'date'||question.question_type === 'email'||question.question_type === 'phone'){
-            answerData ['text_answer'] = value ;
-          } else if (question.question_type === 'radioGroup'){
-            answerData ['selected_option_id'] = value ;
-          } else if (question.question_type === 'checkboxGroup'){
-            if(Array.isArray(value  )){
-              answerData ['selected_option_ids'] = value.filter ((v:any)=>v); 
-            } else {
-                console.warn (`Expected array for checkboxGroup question but got ${typeof value}`)
+          if (question) {
+
+            if (question.question_type === 'text' || question.question_type === 'email' || question.question_type === 'phone') {
+              answerData['text_answer'] = value;
+            } else if (question.question_type === 'date') {
+
+              answerData['text_answer'] = value instanceof Date
+                ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+                : value;
             }
-          } else {
-            answerData['text_answer'] = value ;
-          }
+            else if (question.question_type === 'radioGroup') {
+              answerData['selected_option_id'] = value;
+            } else if (question.question_type === 'checkboxGroup') {
+              if (Array.isArray(value)) {
+                answerData['selected_option_ids'] = value.filter((v: any) => v);
+              } else {
+                console.warn(`Expected array for checkboxGroup question but got ${typeof value}`)
+              }
+            } else {
+              answerData['text_answer'] = value;
+            }
 
-           result.push(answerData)
+            result.push(answerData)
 
           }
 
@@ -163,5 +187,13 @@ export class DynamicQuestionComponent {
 
   isLastQuestion(): boolean {
     return this.currentQuestionIndex === this.questions.length;
+  }
+
+  moveToNextSection() {
+    this.section_number = this.NextScreenSectionId
+    this.currentQuestionIndex =0;
+    this.getQuestionsAndAnswer()
+    this.sharedService.sectionValueUpdate({current_section_id:this.NextScreenSectionId});
+ 
   }
 }

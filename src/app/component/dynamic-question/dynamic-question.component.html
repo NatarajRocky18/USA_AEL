@@ -1,10 +1,11 @@
 <div class="example-container">
-
     @if(questionloaded){
     <form [formGroup]="options">
         @for (items of questions; track $index;let i =$index) {
         <!-- To show only current screen id Question and to elmeinate other-->
-        @if (i==currentQuestionIndex) {
+
+        @if (i ==currentQuestionIndex) { 
+
         <!-- take all the field and group it based on screen-->
         @for (item of items; track $index;let first =$first) {
         <!-- Display for 1 only-->
@@ -32,8 +33,8 @@
 
         <ng-container *ngIf="item.question_type === 'checkboxGroup'">
             <div formGroupName="{{ item.question_id }}">
-                <div class="checkbox-column">
-                    <mat-checkbox *ngFor="let option of item.options" [formControlName]="option.option_id">
+                <div class="checkbox-column" *ngFor="let option of item.options; let i = index">
+                    <mat-checkbox [formControlName]="i">
                         {{ option.option_text }}
                     </mat-checkbox>
                 </div>
@@ -71,7 +72,7 @@
                         <button mat-flat-button color="warn" class="cancel-button">
                             Cancel
                         </button> &nbsp;
-                        <button mat-flat-button color="primary" class="confirm-button">
+                        <button mat-flat-button color="primary" class="confirm-button" (click)="moveToNextSection()">
                             Confirm
                         </button>
                     </div>

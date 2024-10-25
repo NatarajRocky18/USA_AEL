@@ -18,6 +18,7 @@ export class HelpsComponent {
     this.getQuestionsAndAnswer();
     this.sharedService.questionHelpValue$.subscribe((helpText: string) => {
       this.questionHelp = helpText;
+      
     });
    
   }
@@ -28,6 +29,11 @@ export class HelpsComponent {
       if (data) {
         this.questions = data.questions;
         this.sectionHelp = data.section_help;
+        
+         // Set the initial questionHelp if questions exist
+        if (this.questions.length > 0) {
+          this.questionHelp = this.questions[0].question_help || '';
+        }
         console.warn(this.sectionHelp);
       } else {
         console.error('No questions found in the response:', data);

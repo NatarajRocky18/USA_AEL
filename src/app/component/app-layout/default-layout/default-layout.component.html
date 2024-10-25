@@ -1,8 +1,8 @@
 <app-app-header></app-app-header>
 <div class="layout-container">
-  <app-side-navbar (SideNavData)="GetSideNavData($event)"></app-side-navbar>
+  <app-side-navbar></app-side-navbar>
   <div style="width: 100%;">
-    <app-dynamic-question [formDetails]="sidenavData"></app-dynamic-question>
+    <app-dynamic-question></app-dynamic-question>
   </div>
   <div>
     <app-helps></app-helps>
