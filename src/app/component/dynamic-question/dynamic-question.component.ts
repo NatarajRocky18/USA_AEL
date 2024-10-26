@@ -17,11 +17,12 @@ export class DynamicQuestionComponent {
   showSummaryScreenAdd = false;
   currentQuestionIndex = 0;
   profileDetails: any = [];
-  NextScreenSectionId :any=null;
+  NextScreenSectionId: any = null;
   section_number: number = 1;
 
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
+  
     this.sharedService.sectionValue$.subscribe((sections: any) => {
       console.log("SECTION DETAILS:", sections);
       this.section_number = sections.current_section_id;
@@ -29,10 +30,10 @@ export class DynamicQuestionComponent {
       this.getQuestionsAndAnswer();
       this.profileDetails = [];
       this.showSummaryScreenAdd = false;
+      
+    });
 
-    }); 
-
-  } 
+  }
 
 
   questionloaded = false;
@@ -42,7 +43,6 @@ export class DynamicQuestionComponent {
     this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
 
       if (data && data.questions) {
-        // this.options = new FormGroup({});
         this.options = this.formBuilder.group({});
         const objvalue = _.groupBy(data.questions, 'screen_id')
         this.questions = Object.values(objvalue)
@@ -52,17 +52,20 @@ export class DynamicQuestionComponent {
           value['label'] = field?.['field prompt']
           value['value'] = ""
           this.profileDetails.push(value)
-          // this.options.addControl(field?.['question_id'], new FormControl())
           if (field.question_type === 'checkboxGroup') {
             const checkboxArray = this.formBuilder.array(
-              field.options.map((option: any) => new FormControl())
+              field.options.map((option: any) => new FormControl(option["selected"]=="yes"))
             );
-            this.options.addControl(field.question_id.toString(), checkboxArray);
-          } else {
-
-            this.options.addControl(field.question_id.toString(), new FormControl());
+            this.options.addControl(field?.question_id?.toString(), checkboxArray);
+          } else if (field.question_type === 'radioGroup'){
+              const selected = (field.options.find((res:any)=>res["selected"]=="yes"))?.['option_id'] || ''
+              this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
+            }else{
+            this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
           }
         });
+        
+        console.warn(data.section_id);
         console.warn('sssfsfsf', this.questions);
         console.warn(this.options);
         this.questionloaded = true
@@ -80,10 +83,10 @@ export class DynamicQuestionComponent {
   saveAnswerValue(screenId: string, answers: any[]) {
     this.dataService.postTextAnswer(screenId, answers).subscribe((response) => {
       console.log(response);
-      this.NextScreenSectionId =response?.['section_info']['next_section'] || null
+      this.NextScreenSectionId = response?.['section_info']['next_section'] || null
       console.log(response?.['section_info']['next_section']);
       console.log(this.NextScreenSectionId);
-      if(response.questions_changed=="yes"){
+      if (response.questions_changed == "yes") {
         this.showSummaryScreenAdd = false;
         this.getQuestionsAndAnswer()
       }
@@ -166,15 +169,8 @@ export class DynamicQuestionComponent {
             } else {
               answerData['text_answer'] = value;
             }
-
             result.push(answerData)
-
           }
-
-          // result.push({
-          //   question_id: key,
-          //   text_answer: value
-          // });
         }
       }
       return result;
@@ -191,9 +187,9 @@ export class DynamicQuestionComponent {
 
   moveToNextSection() {
     this.section_number = this.NextScreenSectionId
-    this.currentQuestionIndex =0;
+    this.currentQuestionIndex = 0;
     this.getQuestionsAndAnswer()
-    this.sharedService.sectionValueUpdate({current_section_id:this.NextScreenSectionId});
- 
+    this.sharedService.sectionValueUpdate({ current_section_id: this.NextScreenSectionId });
+
   }
 }

@@ -24,6 +24,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { InitialLayoutComponent } from './component/app-layout/initial-layout/initial-layout.component';
 
 
 
@@ -39,6 +40,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     DynamicQuestionComponent,
     HelpsComponent,
     DefaultLayoutComponent,
+    InitialLayoutComponent,
   ],
   imports: [
     BrowserModule,
