@@ -69,7 +69,7 @@
                         <p>Do you submit your details ?</p>
                     </div>
                     <div class="cancel-confirm-button">
-                        <button mat-flat-button color="warn" class="cancel-button">
+                        <button mat-flat-button color="warn" class="cancel-button" (click)="prevQuestion()">
                             Cancel
                         </button> &nbsp;
                         <button mat-flat-button color="primary" class="confirm-button" (click)="moveToNextSection()">

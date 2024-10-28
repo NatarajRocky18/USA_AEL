@@ -30,6 +30,7 @@ import { InitialLayoutComponent } from './component/app-layout/initial-layout/in
 
 
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -57,7 +58,8 @@ import { InitialLayoutComponent } from './component/app-layout/initial-layout/in
     MatInputModule,
     BrowserAnimationsModule,
     MatRadioModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    FormsModule
 
   ],
   exports: [RouterModule],

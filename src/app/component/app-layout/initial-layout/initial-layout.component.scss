@@ -1,0 +1,71 @@
+.form-wrapper {
+    // max-width: 400px;
+    // padding: 30px;
+    text-align: start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    
+  }
+
+  h6 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  mat-radio-group, input {
+    display: block;
+    margin: 0 auto 20px;
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  input[type="tel"], input[type="email"], input[type="text"] ,input[type ="password"] {
+    width: 400px;
+    padding: 12px;
+    border: 2px solid #d1d9e6;
+    border-radius: 10px;
+    outline: none;
+    font-size: 1rem;
+    transition: border-color 0.3s ease; 
+  }
+  
+
+  button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    // font-weight: bold;
+    color:black;
+    background-color: #eafcf7 !important;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    margin: 10px 5px;
+    // margin-left: 400px;
+  }
+  
+  button:hover {
+    background-color: #5a52d6;
+  }
+  
+  button:active {
+    transform: scale(0.95);
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  button.previous {
+    background-color: #eee7ff !important;
+    color: #333;
+    margin-left: 300px;
+  }
+  
+  button.previous:hover {
+    background-color: #b3c0d6;
+  }
+  

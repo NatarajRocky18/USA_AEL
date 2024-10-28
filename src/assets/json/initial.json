@@ -4,23 +4,16 @@
             "question_id": 1,
             "screen_id": 1,
             "question_type": "radioGroup",
-            "Question prompt": "What is your gender?",
-            "field prompt": "What is your gender?",
-            "question_help": "This information is used for statistical purposes only.",
+            "Question prompt": "What are you here for?",
             "options": [
                 {
                     "option_id": 1,
-                    "option_text": "Male",
+                    "option_text": "Start a new application",
                     "selected": "no"
                 },
                 {
                     "option_id": 2,
-                    "option_text": "Female",
-                    "selected": "no"
-                },
-                {
-                    "option_id": 3,
-                    "option_text": "Prefer not to answer",
+                    "option_text": "Resume an existing application",
                     "selected": "no"
                 }
             ],
@@ -30,18 +23,16 @@
             "question_id": 2,
             "screen_id": 2,
             "question_type": "radioGroup",
-            "Question prompt": "Are you of Hispanic or Latino origin?",
-            "field prompt": "Are you of Hispanic or Latino origin?",
-            "question_help": "This information is used for statistical purposes only.",
+            "Question prompt": "what is your preferred method of contact?",
             "options": [
                 {
                     "option_id": 1,
-                    "option_text": "Yes",
+                    "option_text": "phone",
                     "selected": "no"
                 },
                 {
                     "option_id": 2,
-                    "option_text": "No",
+                    "option_text": "email",
                     "selected": "no"
                 }
             ],

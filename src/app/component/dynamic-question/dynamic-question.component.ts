@@ -112,6 +112,8 @@ export class DynamicQuestionComponent {
   }
 
   nextQuestion() {
+    console.warn(this);
+    
 
     if (this.currentQuestionIndex < this.questions.length) {
       this.currentQuestionIndex++;
@@ -182,7 +184,7 @@ export class DynamicQuestionComponent {
   }
 
   isLastQuestion(): boolean {
-    return this.currentQuestionIndex === this.questions.length;
+    return this.currentQuestionIndex === this.questions.length-1;
   }
 
   moveToNextSection() {

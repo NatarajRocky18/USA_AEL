@@ -1,1 +1,39 @@
-<p>initial-layout works!</p>
+<app-app-header></app-app-header>
+<div class="form-wrapper">
+    <div *ngIf="currentScreen === 1">
+      <h6>What are you here for?</h6>
+      <mat-radio-group [(ngModel)]="formData.applicationType" required>
+        <mat-radio-button value="new">Start a new application</mat-radio-button><br>
+        <mat-radio-button value="existing">Resume an existing application</mat-radio-button>
+      </mat-radio-group>
+      <button mat-button (click)="next()">Next</button>
+    </div>
+  
+    <div *ngIf="currentScreen === 2">
+      <h6>What is your preferred method of contact?</h6>
+      <mat-radio-group [(ngModel)]="formData.contactMethod" required>
+        <mat-radio-button value="phone">Phone</mat-radio-button><br>
+        <mat-radio-button value="email">Email</mat-radio-button>
+      </mat-radio-group>
+
+      <button class="previous" mat-button (click)="previous()">Previous</button>
+      <button mat-button (click)="next()">Next</button>
+    </div>
+  
+    <div *ngIf="currentScreen === 3">
+      <h6 *ngIf="formData.contactMethod === 'phone'">Enter your Phone Number</h6>
+      <h6 *ngIf="formData.contactMethod === 'email'">Enter your Email</h6>
+      <input *ngIf="formData.contactMethod === 'phone'" type="tel" [(ngModel)]="formData.phone" required />
+      <input *ngIf="formData.contactMethod === 'email'" type="email" [(ngModel)]="formData.email" required />
+      <button class="previous" mat-button (click)="previous()">Previous</button>
+      <button mat-button (click)="next()">Next</button>
+    </div>
+  
+    <div *ngIf="currentScreen === 4">
+      <h6>Please enter the OTP sent to your {{ formData.contactMethod }}</h6>
+      <input type="password" [(ngModel)]="formData.otp" required />
+      <button class="previous" mat-button (click)="previous()">Previous</button>
+      <button mat-button (click)="finish()">Finish</button>
+    </div>
+  </div>
+  
