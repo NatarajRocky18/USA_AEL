@@ -14,7 +14,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHVkZW50X2lkIjo0OSwiZXhwIjoxNzQwOTI1NzE0fQ.Mx1J6kxf32cuhHNCmwvURZfiqH-tiflrK-94bfsj7Mw';
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHVkZW50X2lkIjo2fQ.zqug3AgeRvMpkGdaeURjGrijoneNK5oftechCE1IAzQ';
 
     const clonedRequest = request.clone({
       setHeaders: {

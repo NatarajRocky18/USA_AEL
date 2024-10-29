@@ -4,10 +4,10 @@
         @for (items of questions; track $index;let i =$index) {
         <!-- To show only current screen id Question and to elmeinate other-->
 
-        @if (i ==currentQuestionIndex) { 
+        @if (i ==currentQuestionIndex) {
 
         <!-- take all the field and group it based on screen-->
-        @for (item of items; track $index;let first =$first) {
+        @for (item of items; track $index;let first =$first;let last =$last) {
         <!-- Display for 1 only-->
         @if(first){
         <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] :
@@ -54,15 +54,38 @@
         </ng-container>
 
         <ng-container *ngIf="item.question_type === 'summary'">
+
             <div class="summary-card">
                 <h2 class="summary-title"> Summary</h2>
                 <div class="key-value-container">
 
                     @for (item of profileDetails; track $index) {
+
+                    @if (item.optionsKeys) {
+                    @if(item.type == "radioGroup"){
+                    @for (options of item.field.options ; track $index){
+                    @if(item.value == options.option_id ){
+                    <div class="key-value-entry">
+                        <span class="key">{{ item.label | titlecase }}</span>
+                        <span class="value"> {{ options.option_text }}</span>
+                    </div>
+                    }
+                    }
+                    }
+                    @if(item.type == "checkboxGroup"){
+                    <div class="key-value-entry">
+                        <span class="key">{{ item.label | titlecase }}</span>
+                        <span class="value"> {{ item.selectedoptions }}</span>
+                    </div>
+                    }
+                    }
+
+                    @if (!item.optionsKeys) {
                     <div class="key-value-entry">
                         <span class="key">{{ item.label | titlecase }}</span>
                         <span class="value"> {{ item.value }}</span>
                     </div>
+                    }
                     }
 
                     <div class="submit-details-heading">
@@ -85,9 +108,11 @@
 
     </form>
     }
+    @if (!(this.questions?.[currentQuestionIndex]?.[0]?.['question_type'] == 'summary')) {
     <div class="next-button">
         <button class="previous-button" mat-button (click)="prevQuestion()"
             *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
-        <button class="next-buttons" mat-flat-button (click)="nextQuestion()" *ngIf="!isLastQuestion()">Next</button>
+        <button class="next-buttons" mat-flat-button (click)="nextQuestion()">Next</button>
     </div>
+    }
 </div>

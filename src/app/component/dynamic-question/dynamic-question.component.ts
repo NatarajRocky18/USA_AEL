@@ -22,7 +22,7 @@ export class DynamicQuestionComponent {
 
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
-  
+
     this.sharedService.sectionValue$.subscribe((sections: any) => {
       console.log("SECTION DETAILS:", sections);
       this.section_number = sections.current_section_id;
@@ -30,11 +30,9 @@ export class DynamicQuestionComponent {
       this.getQuestionsAndAnswer();
       this.profileDetails = [];
       this.showSummaryScreenAdd = false;
-      
+
     });
-
   }
-
 
   questionloaded = false;
   //get question api function
@@ -51,20 +49,51 @@ export class DynamicQuestionComponent {
           value['key'] = field.question_id
           value['label'] = field?.['field prompt']
           value['value'] = ""
+          value['optionsKeys'] = false
+
+          if ((field.question_type === 'radioGroup')) {
+            value['type'] = field?.question_type
+            value['field'] = field
+            value['optionsKeys'] = true
+
+          } else if (field.question_type === 'checkboxGroup') {
+
+            value['type'] = field?.question_type
+            value['field'] = field
+            value['optionsKeys'] = true
+            const checkboxArray = this.formBuilder.array(
+              field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
+            );
+            const selectedOptions: any = [];
+
+            checkboxArray.value.forEach((isSelected: any, index: any) => {
+
+              if (isSelected) {
+                const option = field.options[index];
+                if (option) {
+                  selectedOptions.push(option.option_text);
+                }
+              }
+            });
+          
+            value['selectedoptions'] = selectedOptions
+
+          }
+
           this.profileDetails.push(value)
           if (field.question_type === 'checkboxGroup') {
             const checkboxArray = this.formBuilder.array(
-              field.options.map((option: any) => new FormControl(option["selected"]=="yes"))
+              field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
             );
             this.options.addControl(field?.question_id?.toString(), checkboxArray);
-          } else if (field.question_type === 'radioGroup'){
-              const selected = (field.options.find((res:any)=>res["selected"]=="yes"))?.['option_id'] || ''
-              this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
-            }else{
+          } else if (field.question_type === 'radioGroup') {
+            const selected = (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
+            this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
+          } else {
             this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
           }
         });
-        
+
         console.warn(data.section_id);
         console.warn('sssfsfsf', this.questions);
         console.warn(this.options);
@@ -113,7 +142,7 @@ export class DynamicQuestionComponent {
 
   nextQuestion() {
     console.warn(this);
-    
+
 
     if (this.currentQuestionIndex < this.questions.length) {
       this.currentQuestionIndex++;
@@ -164,7 +193,9 @@ export class DynamicQuestionComponent {
               answerData['selected_option_id'] = value;
             } else if (question.question_type === 'checkboxGroup') {
               if (Array.isArray(value)) {
-                answerData['selected_option_ids'] = value.filter((v: any) => v);
+                answerData['selected_option_ids'] = question.options
+                  .map((option: any, index: number) => (value[index] ? option.option_id : null))
+                  .filter((id: any) => id !== null);
               } else {
                 console.warn(`Expected array for checkboxGroup question but got ${typeof value}`)
               }
@@ -183,9 +214,9 @@ export class DynamicQuestionComponent {
 
   }
 
-  isLastQuestion(): boolean {
-    return this.currentQuestionIndex === this.questions.length-1;
-  }
+  // isLastQuestion(): boolean {
+  //   return this.currentQuestionIndex === this.questions.length;
+  // }
 
   moveToNextSection() {
     this.section_number = this.NextScreenSectionId
