@@ -6,21 +6,28 @@ import {
   HttpInterceptor
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './services/auth.service';
+
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    const sessionToken = this.authService.getSessionToken();
 
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHVkZW50X2lkIjo2fQ.zqug3AgeRvMpkGdaeURjGrijoneNK5oftechCE1IAzQ';
+    //const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdHVkZW50X2lkIjo1fQ.RAT2cghJrs02swGkhedIIcCPEKuBIyggaQZoXn7ck2A';
 
-    const clonedRequest = request.clone({
-      setHeaders: {
-        'X-Session-Token': token
-      }
-    });
-    return next.handle(clonedRequest);
-  } 
+    if (sessionToken) {
+      const clonedRequest = request.clone({
+        setHeaders: {
+          'X-Session-Token': sessionToken
+        }
+      });
+
+      return next.handle(clonedRequest);
+    }
+    return next.handle(request); 
+  }
 }
