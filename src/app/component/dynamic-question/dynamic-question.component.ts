@@ -3,11 +3,50 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { SharedService } from '../../services/shared.service';
 import * as _ from 'lodash'
+
+interface OptionData {
+  option_text?: string;
+  selected?: string;
+};
+interface Question {
+  question_type?: string;
+  question_prompt?: string;
+  field_prompt?: string;
+  question_help?: string;
+  text_answer?: string;
+  optional?: boolean;
+  questions?: {[key: string]: Question};
+  options?: {[key: number]: OptionData};
+};
+// Add these interfaces first
+interface AnswerPayload {
+  section_id: string;
+  answers: {
+    [key: string]: {
+      [key: string]: any;
+    };
+  };
+}
+// Add this interface if you don't already have it
+interface QuestionData {
+  screen_id: string;
+  question_id: string;
+  question_type: string;
+  // add other properties as needed
+}
+
+interface AnswerValue {
+  text_answer?: string;
+  selected_option_id?: number;
+  selected_option_ids?: number[];
+}
 @Component({
   selector: 'app-dynamic-question',
   templateUrl: './dynamic-question.component.html',
   styleUrl: './dynamic-question.component.scss'
 })
+
+
 export class DynamicQuestionComponent {
 
   constructor(private dataService: DataService, private sharedService: SharedService, private formBuilder: FormBuilder) { }
@@ -20,6 +59,30 @@ export class DynamicQuestionComponent {
   NextScreenSectionId: any = null;
   section_number: number = 1;
 
+  // Add this helper method to format dates
+  formatDate(dateValue: any): string {
+    try {
+      if (!dateValue) return '';
+      
+      let date: Date;
+      if (dateValue instanceof Date) {
+        date = dateValue;
+      } else if (typeof dateValue === 'string') {
+        date = new Date(dateValue);
+      } else {
+        return String(dateValue);
+      }
+  
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return String(dateValue);
+    }
+  }
+  
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
 
@@ -33,71 +96,156 @@ export class DynamicQuestionComponent {
 
     });
   }
-
+  flattenOptions(options: {[optionId: number]: OptionData}) : any[] {
+    const option_data: any[] = [];
+    Object.entries(options).forEach (([optionId, option_details]) => {
+      option_data.push ( {
+        option_id: optionId,
+        option_text: option_details.option_text,
+        selected: option_details.selected
+      });
+    })
+    return option_data;
+  }
   questionloaded = false;
+
+  // Transform nested questions into flat array with screen_ids
+  flattenQuestions(questions: {[key: string]: Question}): any[] {
+    const flatQuestions: any[] = [];
+      
+    Object.entries(questions).forEach(([parentKey, question]) => {
+      if (question.questions) {
+        // For questions with sub-questions, use the parent key as screen_id
+        Object.entries(question.questions).forEach(([subKey, subQuestion]) => {
+          var option_data: any[] = [];
+          if (subQuestion.options) {
+            option_data = this.flattenOptions(subQuestion.options);
+          }
+          flatQuestions.push({
+            question_id: subKey,
+            screen_id: parentKey, // Using parent key as screen_id
+            question_type: subQuestion.question_type,
+            'Question prompt': question.question_prompt,
+            'field prompt': subQuestion.question_prompt,
+            question_help: question.question_help,
+            text_answer: subQuestion.text_answer,
+            optional: subQuestion.optional,
+            options: option_data
+          });
+        });
+      } else {
+        // For direct questions, use their own key as both screen_id and question_id
+        var option_data: any[] = [];
+        if (question.options) {
+          option_data = this.flattenOptions(question.options);
+        }
+        flatQuestions.push({
+          question_id: parentKey,
+          screen_id: parentKey,
+          question_type: question.question_type,
+          'Question prompt': question.question_prompt,
+          'field prompt': question.question_prompt,
+          question_help: question.question_help,
+          text_answer: question.text_answer,
+          optional: question.optional,
+          options: option_data
+        });
+      }
+    });
+    return flatQuestions;
+  }
+  
+  processQuestionsAndAnswerResponse(data:any): void {
+    const hasSummary = this.showSummaryScreenAdd;
+    const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;
+    
+    this.options = this.formBuilder.group({});
+    // Clear previous profile details to prevent duplicates
+    this.profileDetails = [];
+    // Transform the nested structure into flat array
+    const flatQuestions = this.flattenQuestions(data.questions);
+
+    const objvalue = _.groupBy(flatQuestions, 'screen_id')
+    this.questions = Object.values(objvalue)
+
+    // Create a Set to track processed question IDs and prevent duplicates
+    const processedQuestionIds = new Set<string>();
+
+      // Restore summary screen if it existed
+    if (hasSummary && summaryScreen) {
+      this.questions.push(summaryScreen);
+    }
+
+    flatQuestions.forEach((field: any) => {
+      if (processedQuestionIds.has(field.question_id)) {
+        return;
+      }
+      processedQuestionIds.add(field.question_id);
+  
+      let value: any = {}
+      value['key'] = field.question_id
+      value['label'] = field?.['field prompt']
+      value['value'] = field.text_answer
+      value['optionsKeys'] = false
+
+      if ((field.question_type === 'radioGroup')) {
+        value['type'] = field?.question_type
+        value['field'] = field
+        value['optionsKeys'] = true
+        value['value'] = field.selected_option_id
+
+      } else if (field.question_type === 'checkboxGroup') {
+
+        value['type'] = field?.question_type
+        value['field'] = field
+        value['optionsKeys'] = true
+        const checkboxArray = this.formBuilder.array(
+          field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
+        );
+
+        const selectedOptions: any = [];
+
+        checkboxArray.value.forEach((isSelected: any, index: any) => {
+
+          if (isSelected) {
+            const option = field.options[index];
+            if (option) {
+              selectedOptions.push(option.option_text);
+            }
+          }
+        });
+      
+        value['selectedoptions'] = selectedOptions
+
+      }
+
+      this.profileDetails.push(value)
+      if (field.question_type === 'checkboxGroup') {
+        const checkboxArray = this.formBuilder.array(
+          field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
+        );
+        this.options.addControl(field?.question_id?.toString(), checkboxArray);
+      } else if (field.question_type === 'radioGroup') {
+        const selected = (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
+        this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
+      } else {
+        this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
+      }
+    });
+
+    console.warn(data.section_id);
+    console.warn('Questions', this.questions);
+    console.warn('Form controls:',this.options);
+    this.questionloaded = true
+  }  
+
   //get question api function
   getQuestionsAndAnswer(): void {
 
     this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
 
       if (data && data.questions) {
-        this.options = this.formBuilder.group({});
-        const objvalue = _.groupBy(data.questions, 'screen_id')
-        this.questions = Object.values(objvalue)
-        data.questions.forEach((field: any) => {
-          let value: any = {}
-          value['key'] = field.question_id
-          value['label'] = field?.['field prompt']
-          value['value'] = ""
-          value['optionsKeys'] = false
-
-          if ((field.question_type === 'radioGroup')) {
-            value['type'] = field?.question_type
-            value['field'] = field
-            value['optionsKeys'] = true
-
-          } else if (field.question_type === 'checkboxGroup') {
-
-            value['type'] = field?.question_type
-            value['field'] = field
-            value['optionsKeys'] = true
-            const checkboxArray = this.formBuilder.array(
-              field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
-            );
-            const selectedOptions: any = [];
-
-            checkboxArray.value.forEach((isSelected: any, index: any) => {
-
-              if (isSelected) {
-                const option = field.options[index];
-                if (option) {
-                  selectedOptions.push(option.option_text);
-                }
-              }
-            });
-          
-            value['selectedoptions'] = selectedOptions
-
-          }
-
-          this.profileDetails.push(value)
-          if (field.question_type === 'checkboxGroup') {
-            const checkboxArray = this.formBuilder.array(
-              field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
-            );
-            this.options.addControl(field?.question_id?.toString(), checkboxArray);
-          } else if (field.question_type === 'radioGroup') {
-            const selected = (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
-            this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
-          } else {
-            this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
-          }
-        });
-
-        console.warn(data.section_id);
-        console.warn('sssfsfsf', this.questions);
-        console.warn(this.options);
-        this.questionloaded = true
+        this.processQuestionsAndAnswerResponse(data)
       } else {
         console.error('No questions found in the response:', data);
         this.questions = [];
@@ -109,17 +257,20 @@ export class DynamicQuestionComponent {
 
   //post api function for save form values
 
-  saveAnswerValue(screenId: string, answers: any[]) {
-    this.dataService.postTextAnswer(screenId, answers).subscribe((response) => {
-      console.log(response);
+  saveAnswerValue(screenId: string, payload: any) {
+    this.dataService.postTextAnswer(screenId, payload).subscribe((response) => {
+      console.log('Save response:', response);
       this.NextScreenSectionId = response?.['section_info']['next_section'] || null
       console.log(response?.['section_info']['next_section']);
       console.log(this.NextScreenSectionId);
-      if (response.questions_changed == "yes") {
-        this.showSummaryScreenAdd = false;
-        this.getQuestionsAndAnswer()
+      if (response.questions_and_answers) {
+        if (!this.showSummaryScreenAdd) {
+          this.processQuestionsAndAnswerResponse(response.questions_and_answers);
+        }  
       }
-      if (response.section_info.current_section_status === 'finished' && !this.showSummaryScreenAdd) {
+      if (response.section_info.current_section_status === 'finished' &&
+        !this.showSummaryScreenAdd && 
+        this.questions[this.questions.length - 1]?.[0]?.question_type !== 'summary') {
         this.showSummaryScreenAdd = true;
         this.questions.push([{ question_type: "summary" }])
       }
@@ -140,80 +291,125 @@ export class DynamicQuestionComponent {
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
   }
 
-  nextQuestion() {
-    console.warn(this);
-
-
+  private updateQuestionIndex(): void {
     if (this.currentQuestionIndex < this.questions.length) {
       this.currentQuestionIndex++;
     }
-
+    
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
-
-    const screenId = this.questions[this.currentQuestionIndex - 1]?.[0].screen_id;
-    console.warn('scareen value', screenId);
-
-    let questions = this.questions.flat();
-
-    const objvalueSet = new Set(questions.filter((res: any) => res.screen_id === screenId).map((res: any) => res['question_id'].toString()));
-    const dataToSend = Object.entries(this.options.value).reduce((result: any, [key, value]) => {
-      if (value !== null && value !== '' && value !== undefined) {
-
-        if (_.isEmpty(objvalueSet) || objvalueSet.has(key)) {
-          let currentSummaryvalue = this.profileDetails.find((res: any) => res.key == key);
-
-          if (currentSummaryvalue) {
-            currentSummaryvalue['value'] = value || '';
-
-            console.log("Question Details:", currentSummaryvalue);
-
-          } else {
-            console.warn(`No matching entry found for ${key} in profiledetails`);
-          }
-
-          // handle the different payload types based on the question type
-
-          let answerData: { [key: string]: any } = { question_id: key }
-
-          const question = questions.find((q: any) => q.question_id.toString() === key)
-
-          if (question) {
-
-            if (question.question_type === 'text' || question.question_type === 'email' || question.question_type === 'phone') {
-              answerData['text_answer'] = value;
-            } else if (question.question_type === 'date') {
-
-              answerData['text_answer'] = value instanceof Date
-                ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
-                : value;
-            }
-            else if (question.question_type === 'radioGroup') {
-              answerData['selected_option_id'] = value;
-            } else if (question.question_type === 'checkboxGroup') {
-              if (Array.isArray(value)) {
-                answerData['selected_option_ids'] = question.options
-                  .map((option: any, index: number) => (value[index] ? option.option_id : null))
-                  .filter((id: any) => id !== null);
-              } else {
-                console.warn(`Expected array for checkboxGroup question but got ${typeof value}`)
-              }
-            } else {
-              answerData['text_answer'] = value;
-            }
-            result.push(answerData)
-          }
-        }
-      }
-      return result;
-    }, []);
-
-    console.warn(screenId, dataToSend);
-    this.saveAnswerValue(screenId, dataToSend);
-
   }
+  
+  private prepareAnswerValue(question: any, value: any): AnswerValue {
+    const answerValue: AnswerValue = {};
+  
+    switch (question.question_type) {
+      case 'checkboxGroup':
+        if (Array.isArray(value)) {
+          answerValue.selected_option_ids = question.options
+            .map((option: any, index: number) => (value[index] ? parseInt(option.option_id) : null))
+            .filter((id: any) => id !== null);
+        }
+        break;
+  
+      case 'radioGroup':
+        answerValue.selected_option_id = parseInt(value);
+        break;
+  
+      case 'date':
+        answerValue.text_answer = value instanceof Date
+          ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+          : value;
+        break;
+  
+      default:
+        answerValue.text_answer = value;
+    }
+  
+    return answerValue;
+  }
+  
+  private updateSummaryValue(question: any, value: any, currentSummaryValue: any): void {
+    if (question.question_type === 'date') {
+      currentSummaryValue['value'] = this.formatDate(value);
+    } else {
+      currentSummaryValue['value'] = value || '';
+    }
+  }
+  
+  private processFormValue(
+    key: string, 
+    value: any, 
+    questions: QuestionData[], 
+    objvalueSet: Set<string>, 
+    answersPayload: AnswerPayload
+  ): void {
+    if (value === null || value === '' || value === undefined) {
+      return;
+    }
+  
+    if (!_.isEmpty(objvalueSet) && !objvalueSet.has(key)) {
+      return;
+    }
+  
+    const question = questions.find((q: any) => q.question_id.toString() === key);
+    if (!question) {
+      return;
+    }
+  
+    const currentSummaryvalue = this.profileDetails.find((res: any) => res.key === key);
+    if (!currentSummaryvalue) {
+      return;
+    }
+  
+    // Update summary value
+    this.updateSummaryValue(question, value, currentSummaryvalue);
+  
+    // Get the screen_id for this question
+    const questionScreenId = question.screen_id;
+  
+    // Initialize the screen group if it doesn't exist
+    if (!answersPayload.answers[questionScreenId]) {
+      answersPayload.answers[questionScreenId] = {};
+    }
+  
+    // Prepare and add the answer
+    const answerValue = this.prepareAnswerValue(question, value);
+    if (questionScreenId != question.question_id) {
+      answersPayload.answers[questionScreenId][question.question_id] = answerValue;
+    } else {
+      answersPayload.answers[question.question_id] = answerValue;
+    }
+  }
+  
 
+  nextQuestion(): void {
+    this.updateQuestionIndex();
+  
+    const screenId = this.questions[this.currentQuestionIndex - 1]?.[0].screen_id;
+    const questions = this.questions.flat() as QuestionData[];
+  
+    const objvalueSet = new Set<string>(
+      questions
+        .filter((res) => res.screen_id === screenId)
+        .map((res) => res.question_id.toString())
+    );
+  
+    const answersPayload: AnswerPayload = {
+      section_id: this.section_number.toString(),
+      answers: {}
+    };
+  
+    // Process each form value
+    Object.entries(this.options.value).forEach(([key, value]) => {
+      this.processFormValue(key, value, questions, objvalueSet, answersPayload);
+    });
+  
+    console.log('Restructured payload:', JSON.stringify(answersPayload, null, 2));
+    this.saveAnswerValue(screenId, answersPayload);
+  }
+  
   // isLastQuestion(): boolean {
   //   return this.currentQuestionIndex === this.questions.length;
   // }

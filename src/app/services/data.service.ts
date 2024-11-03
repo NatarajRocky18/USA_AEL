@@ -33,10 +33,11 @@ export class DataService {
 
     const url = `${this.apiUrl}assistant/submit-answer/`;
 
-    const body = {
-      screen_id: screenId,
-      answers: answers
-    }
+    const body = answers;
+    //const body = {
+    //  screen_id: screenId,
+    //  answers: answers
+    //}
 
     return this.http.post<any>(url, body)
   }

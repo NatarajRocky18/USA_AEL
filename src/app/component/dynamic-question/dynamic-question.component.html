@@ -62,22 +62,22 @@
                     @for (item of profileDetails; track $index) {
 
                     @if (item.optionsKeys) {
-                    @if(item.type == "radioGroup"){
-                    @for (options of item.field.options ; track $index){
-                    @if(item.value == options.option_id ){
-                    <div class="key-value-entry">
-                        <span class="key">{{ item.label | titlecase }}</span>
-                        <span class="value"> {{ options.option_text }}</span>
-                    </div>
-                    }
-                    }
-                    }
-                    @if(item.type == "checkboxGroup"){
-                    <div class="key-value-entry">
-                        <span class="key">{{ item.label | titlecase }}</span>
-                        <span class="value"> {{ item.selectedoptions }}</span>
-                    </div>
-                    }
+                        @if(item.type == "radioGroup"){
+                            @for (options of item.field.options ; track $index){
+                                @if(options.selected == "yes" ){
+                                    <div class="key-value-entry">
+                                        <span class="key">{{ item.label | titlecase }}</span>
+                                        <span class="value"> {{ options.option_text }}</span>
+                                    </div>
+                                }
+                            }
+                        }
+                        @if(item.type == "checkboxGroup"){
+                            <div class="key-value-entry">
+                                <span class="key">{{ item.label | titlecase }}</span>
+                                <span class="value"> {{ item.selectedoptions }}</span>
+                            </div>
+                        }
                     }
 
                     @if (!item.optionsKeys) {
