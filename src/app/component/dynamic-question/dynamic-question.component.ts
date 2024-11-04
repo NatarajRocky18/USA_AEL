@@ -264,9 +264,10 @@ export class DynamicQuestionComponent {
       console.log(response?.['section_info']['next_section']);
       console.log(this.NextScreenSectionId);
       if (response.questions_and_answers) {
-        if (!this.showSummaryScreenAdd) {
+        if (response.questions_and_answers.questions_changed == "yes") {
+          this.showSummaryScreenAdd = false;
           this.processQuestionsAndAnswerResponse(response.questions_and_answers);
-        }  
+        }
       }
       if (response.section_info.current_section_status === 'finished' &&
         !this.showSummaryScreenAdd && 
