@@ -20,10 +20,15 @@ export class HelpsComponent {
       this.questionHelp = helpText;
       
     });
+
+    this.sharedService.sectionHelp$.subscribe((data)=>{
+      this.sectionHelp = data;
+    });
    
   }
 
   getQuestionsAndAnswer(): void {
+    
     this.dataService.questionsAndAnswer(1).subscribe((data) => {
 
       if (data) {

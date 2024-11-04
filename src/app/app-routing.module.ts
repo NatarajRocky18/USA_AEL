@@ -5,13 +5,13 @@ import { InitialLayoutComponent } from './component/app-layout/initial-layout/in
 
 const routes: Routes = [
   {
-    path:'questions',
-    component:DefaultLayoutComponent
+    path: '',
+    component: InitialLayoutComponent
   },
   {
-    path:'',
-    component:InitialLayoutComponent
-  }
+    path: 'questions',
+    component: DefaultLayoutComponent
+  },
 ];
 
 @NgModule({

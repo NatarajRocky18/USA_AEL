@@ -15,8 +15,8 @@ interface Question {
   question_help?: string;
   text_answer?: string;
   optional?: boolean;
-  questions?: {[key: string]: Question};
-  options?: {[key: number]: OptionData};
+  questions?: { [key: string]: Question };
+  options?: { [key: number]: OptionData };
 };
 // Add these interfaces first
 interface AnswerPayload {
@@ -63,7 +63,7 @@ export class DynamicQuestionComponent {
   formatDate(dateValue: any): string {
     try {
       if (!dateValue) return '';
-      
+
       let date: Date;
       if (dateValue instanceof Date) {
         date = dateValue;
@@ -72,7 +72,7 @@ export class DynamicQuestionComponent {
       } else {
         return String(dateValue);
       }
-  
+
       return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -82,7 +82,7 @@ export class DynamicQuestionComponent {
       return String(dateValue);
     }
   }
-  
+
   ngOnInit(): void {
     this.getQuestionsAndAnswer();
 
@@ -94,12 +94,14 @@ export class DynamicQuestionComponent {
       this.profileDetails = [];
       this.showSummaryScreenAdd = false;
 
+
     });
   }
-  flattenOptions(options: {[optionId: number]: OptionData}) : any[] {
+
+  flattenOptions(options: { [optionId: number]: OptionData }): any[] {
     const option_data: any[] = [];
-    Object.entries(options).forEach (([optionId, option_details]) => {
-      option_data.push ( {
+    Object.entries(options).forEach(([optionId, option_details]) => {
+      option_data.push({
         option_id: optionId,
         option_text: option_details.option_text,
         selected: option_details.selected
@@ -107,12 +109,13 @@ export class DynamicQuestionComponent {
     })
     return option_data;
   }
+
   questionloaded = false;
 
   // Transform nested questions into flat array with screen_ids
-  flattenQuestions(questions: {[key: string]: Question}): any[] {
+  flattenQuestions(questions: { [key: string]: Question }): any[] {
     const flatQuestions: any[] = [];
-      
+
     Object.entries(questions).forEach(([parentKey, question]) => {
       if (question.questions) {
         // For questions with sub-questions, use the parent key as screen_id
@@ -154,11 +157,11 @@ export class DynamicQuestionComponent {
     });
     return flatQuestions;
   }
-  
-  processQuestionsAndAnswerResponse(data:any): void {
+
+  processQuestionsAndAnswerResponse(data: any): void {
     const hasSummary = this.showSummaryScreenAdd;
     const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;
-    
+
     this.options = this.formBuilder.group({});
     // Clear previous profile details to prevent duplicates
     this.profileDetails = [];
@@ -171,7 +174,7 @@ export class DynamicQuestionComponent {
     // Create a Set to track processed question IDs and prevent duplicates
     const processedQuestionIds = new Set<string>();
 
-      // Restore summary screen if it existed
+    // Restore summary screen if it existed
     if (hasSummary && summaryScreen) {
       this.questions.push(summaryScreen);
     }
@@ -181,7 +184,7 @@ export class DynamicQuestionComponent {
         return;
       }
       processedQuestionIds.add(field.question_id);
-  
+
       let value: any = {}
       value['key'] = field.question_id
       value['label'] = field?.['field prompt']
@@ -214,7 +217,7 @@ export class DynamicQuestionComponent {
             }
           }
         });
-      
+
         value['selectedoptions'] = selectedOptions
 
       }
@@ -235,15 +238,18 @@ export class DynamicQuestionComponent {
 
     console.warn(data.section_id);
     console.warn('Questions', this.questions);
-    console.warn('Form controls:',this.options);
+    console.warn('Form controls:', this.options);
     this.questionloaded = true
-  }  
-
+    this.currentQuestionHelpUpdate();
+    this.currentSectionHelpUpdate();
+  }
+  
+  data: any
   //get question api function
   getQuestionsAndAnswer(): void {
 
     this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
-
+      this.data = data;
       if (data && data.questions) {
         this.processQuestionsAndAnswerResponse(data)
       } else {
@@ -270,7 +276,7 @@ export class DynamicQuestionComponent {
         }
       }
       if (response.section_info.current_section_status === 'finished' &&
-        !this.showSummaryScreenAdd && 
+        !this.showSummaryScreenAdd &&
         this.questions[this.questions.length - 1]?.[0]?.question_type !== 'summary') {
         this.showSummaryScreenAdd = true;
         this.questions.push([{ question_type: "summary" }])
@@ -282,6 +288,20 @@ export class DynamicQuestionComponent {
     }
     );
   }
+
+
+  currentQuestionHelpUpdate() {
+    const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
+    const currentQuestionHelp = currentQuestion?.question_help;
+    this.sharedService.questionHelpUpdate(currentQuestionHelp);
+  }
+
+  currentSectionHelpUpdate() { 
+    const currentSectionHelp = this.data.section_help
+    this.sharedService.sectiongHelpUpdate(currentSectionHelp)
+  }
+
+
 
   prevQuestion(): void {
     if (this.currentQuestionIndex > 0) {
@@ -296,15 +316,15 @@ export class DynamicQuestionComponent {
     if (this.currentQuestionIndex < this.questions.length) {
       this.currentQuestionIndex++;
     }
-    
+
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
   }
-  
+
   private prepareAnswerValue(question: any, value: any): AnswerValue {
     const answerValue: AnswerValue = {};
-  
+
     switch (question.question_type) {
       case 'checkboxGroup':
         if (Array.isArray(value)) {
@@ -313,24 +333,24 @@ export class DynamicQuestionComponent {
             .filter((id: any) => id !== null);
         }
         break;
-  
+
       case 'radioGroup':
         answerValue.selected_option_id = parseInt(value);
         break;
-  
+
       case 'date':
         answerValue.text_answer = value instanceof Date
           ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
           : value;
         break;
-  
+
       default:
         answerValue.text_answer = value;
     }
-  
+
     return answerValue;
   }
-  
+
   private updateSummaryValue(question: any, value: any, currentSummaryValue: any): void {
     if (question.question_type === 'date') {
       currentSummaryValue['value'] = this.formatDate(value);
@@ -338,43 +358,43 @@ export class DynamicQuestionComponent {
       currentSummaryValue['value'] = value || '';
     }
   }
-  
+
   private processFormValue(
-    key: string, 
-    value: any, 
-    questions: QuestionData[], 
-    objvalueSet: Set<string>, 
+    key: string,
+    value: any,
+    questions: QuestionData[],
+    objvalueSet: Set<string>,
     answersPayload: AnswerPayload
   ): void {
     if (value === null || value === '' || value === undefined) {
       return;
     }
-  
+
     if (!_.isEmpty(objvalueSet) && !objvalueSet.has(key)) {
       return;
     }
-  
+
     const question = questions.find((q: any) => q.question_id.toString() === key);
     if (!question) {
       return;
     }
-  
+
     const currentSummaryvalue = this.profileDetails.find((res: any) => res.key === key);
     if (!currentSummaryvalue) {
       return;
     }
-  
+
     // Update summary value
     this.updateSummaryValue(question, value, currentSummaryvalue);
-  
+
     // Get the screen_id for this question
     const questionScreenId = question.screen_id;
-  
+
     // Initialize the screen group if it doesn't exist
     if (!answersPayload.answers[questionScreenId]) {
       answersPayload.answers[questionScreenId] = {};
     }
-  
+
     // Prepare and add the answer
     const answerValue = this.prepareAnswerValue(question, value);
     if (questionScreenId != question.question_id) {
@@ -383,34 +403,34 @@ export class DynamicQuestionComponent {
       answersPayload.answers[question.question_id] = answerValue;
     }
   }
-  
+
 
   nextQuestion(): void {
     this.updateQuestionIndex();
-  
+
     const screenId = this.questions[this.currentQuestionIndex - 1]?.[0].screen_id;
     const questions = this.questions.flat() as QuestionData[];
-  
+
     const objvalueSet = new Set<string>(
       questions
         .filter((res) => res.screen_id === screenId)
         .map((res) => res.question_id.toString())
     );
-  
+
     const answersPayload: AnswerPayload = {
       section_id: this.section_number.toString(),
       answers: {}
     };
-  
+
     // Process each form value
     Object.entries(this.options.value).forEach(([key, value]) => {
       this.processFormValue(key, value, questions, objvalueSet, answersPayload);
     });
-  
+
     console.log('Restructured payload:', JSON.stringify(answersPayload, null, 2));
     this.saveAnswerValue(screenId, answersPayload);
   }
-  
+
   // isLastQuestion(): boolean {
   //   return this.currentQuestionIndex === this.questions.length;
   // }
@@ -420,6 +440,17 @@ export class DynamicQuestionComponent {
     this.currentQuestionIndex = 0;
     this.getQuestionsAndAnswer()
     this.sharedService.sectionValueUpdate({ current_section_id: this.NextScreenSectionId });
+    this.dataService.sectionProgress();
+    this.getSectionProgress();
 
+  }
+
+  getSectionProgress(): void {
+    this.dataService.sectionProgress().subscribe((data) => {
+      this.sharedService.sideNaveShareDataValue(data)
+    }, (error) => {
+      console.error('Error fetching section progress:', error);
+
+    })
   }
 }

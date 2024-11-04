@@ -2,15 +2,34 @@
   <div class="menu-items-noncollapsed">
     <ul class="sidenav-nav">
       <li class="sidenav-nav-item" *ngFor="let section of sectionProgressData; let i = index;">
+        @if(section.status =="in_progress"){
+        <a (click)="getSectionQuestionAndOptions(section, i)" [ngClass]="{'in_progress': section.status === 'in_progress'}">
+          <ng-container >
+            <mat-icon >hourglass_full</mat-icon>
+          </ng-container>
+          <span [ngClass]="{'in_progress-color': section.status === 'in_progress'}">
+            {{section.section_name}}
+          </span>
+        </a>
+        }
+        @if(section.status =="to_do"){
+        <a (click)="getSectionQuestionAndOptions(section, i)" [class.disabled]="section.status === 'to_do'"
+          [attr.aria-disabled]="section.status === 'to_do' ? true : null">
+          <mat-icon>assignment</mat-icon>
+          <span>{{ section.section_name }}</span>
+        </a>
 
+        }
+        @if(section.status =="finished"){
         <a (click)="getSectionQuestionAndOptions(section, i)">
           <ng-container>
             <mat-icon>check_circle_outline</mat-icon>
           </ng-container>
-          <span >
+          <span>
             {{section.section_name}}
           </span>
         </a>
+        }
       </li>
     </ul>
   </div>

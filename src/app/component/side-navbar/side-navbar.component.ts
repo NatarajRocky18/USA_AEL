@@ -12,13 +12,17 @@ export class SideNavbarComponent {
   constructor(private dataService: DataService, private sharedService: SharedService) { }
   ngOnInit(): void {
     this.getSectionProgress();
+    this.sharedService.sideNavDataShare$.subscribe((res)=>
+      this.sectionProgressData = res 
+    )
   }
 
-  sectionProgressData: any[] = [];
+   sectionProgressData: any[] = [];
 
   getSectionProgress(): void {
     this.dataService.sectionProgress().subscribe((data) => {
-      this.sectionProgressData = data;
+    this.sharedService.sideNaveShareDataValue(data)
+      
       console.warn(this.sectionProgressData);
 
     }, (error) => {

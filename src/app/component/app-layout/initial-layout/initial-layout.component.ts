@@ -30,7 +30,9 @@ export class InitialLayoutComponent {
   async ngOnInit() {
     // Check for existing session token
     const sessionToken = this.authService.getSessionToken();
+    console.log(sessionToken);
     if (sessionToken) {
+      
       try {
         // Try to lookup student with session token
         await this.authService.lookupBySessionToken(sessionToken).toPromise();
@@ -44,6 +46,7 @@ export class InitialLayoutComponent {
   }
 
   async next() {
+    debugger
     if (!this.isCurrentStepValid()) {
       alert("Please fill out the required fields");
       return;
@@ -74,6 +77,7 @@ export class InitialLayoutComponent {
 
     } catch (err) {
       this.error = 'An error occurred. Please try again.';
+      alert("Invalid Email or phone number ")
       console.error(err);
     } finally {
       this.loading = false;
@@ -104,6 +108,7 @@ export class InitialLayoutComponent {
       // Navigate to questions
       this.router.navigate(['/questions']);
     } catch (err) {
+      alert("Invalid OTP. Please try again.")
       this.error = 'Invalid OTP. Please try again.';
       console.error(err);
     } finally {

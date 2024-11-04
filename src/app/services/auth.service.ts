@@ -34,6 +34,7 @@ export class AuthService {
         headers: {
           'X-Session-Token': sessionToken
         }
+       
       }).pipe(
         catchError(error => {
           this.clearSessionToken(); // Clear invalid token
