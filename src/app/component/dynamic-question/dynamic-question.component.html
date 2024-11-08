@@ -1,6 +1,6 @@
 <div class="example-container">
     @if(questionloaded){
-    <form [formGroup]="options">
+    <form [formGroup]="options" style="margin-top: 20px;">
         @for (items of questions; track $index;let i =$index) {
         <!-- To show only current screen id Question and to elmeinate other-->
 
@@ -18,12 +18,13 @@
             *ngIf=" item.question_type === 'text' || item.question_type === 'address' || item.question_type === 'email' || item.question_type === 'phone'">
             <mat-form-field style="width: 300px;">
                 <mat-label>{{item?.['field prompt'] }}</mat-label>
-                <input matInput formControlName="{{item?.['question_id']}}" />
+                <input matInput formControlName="{{item?.['question_id']}}" [required]="!item?.['optional']" />
             </mat-form-field>
         </ng-container>
 
         <ng-container *ngIf="item.question_type === 'radioGroup'">
-            <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option">
+            <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option"
+                [required]="!item?.['optional']" style="margin-left: 20px;">
                 <mat-radio-button *ngFor="let option of item.options" [value]="option.option_id">
                     {{ option.option_text }}
                 </mat-radio-button>
@@ -46,7 +47,7 @@
             <mat-form-field style="width: 300px;">
                 <mat-label>{{item?.['field prompt'] }}</mat-label>
                 <input matInput [matDatepicker]="picker" placeholder="Choose a date"
-                    formControlName="{{item?.['question_id']}}" />
+                    formControlName="{{item?.['question_id']}}" [required]="!item?.['optional']" />
                 <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker></mat-datepicker>
                 <mat-hint>MM/DD/YYYY</mat-hint>
@@ -56,28 +57,28 @@
         <ng-container *ngIf="item.question_type === 'summary'">
 
             <div class="summary-card">
-                <h2 class="summary-title"> Summary</h2>
+                <h2 class="summary-title"> Summary </h2>
                 <div class="key-value-container">
 
                     @for (item of profileDetails; track $index) {
-
                     @if (item.optionsKeys) {
-                        @if(item.type == "radioGroup"){
-                            @for (options of item.field.options ; track $index){
-                                @if(options.selected == "yes" ){
-                                    <div class="key-value-entry">
-                                        <span class="key">{{ item.label | titlecase }}</span>
-                                        <span class="value"> {{ options.option_text }}</span>
-                                    </div>
-                                }
-                            }
-                        }
-                        @if(item.type == "checkboxGroup"){
-                            <div class="key-value-entry">
-                                <span class="key">{{ item.label | titlecase }}</span>
-                                <span class="value"> {{ item.selectedoptions }}</span>
-                            </div>
-                        }
+                    @if(item.type == "radioGroup"){
+                    @for (options of item.field.options ; track $index){
+                    @if(options.selected == "yes" ){
+                    <!-- {{options.selected|json}} -->
+                    <div class="key-value-entry">
+                        <span class="key">{{ item.label | titlecase }}</span>
+                        <span class="value"> {{ options.option_text }}</span>
+                    </div>
+                    }
+                    }
+                    }
+                    @if(item.type == "checkboxGroup"){
+                    <div class="key-value-entry">
+                        <span class="key">{{ item.label | titlecase }}</span>
+                        <span class="value"> {{ item.selectedoptions }}</span>
+                    </div>
+                    }
                     }
 
                     @if (!item.optionsKeys) {
@@ -112,7 +113,10 @@
     <div class="next-button">
         <button class="previous-button" mat-button (click)="prevQuestion()"
             *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
-        <button class="next-buttons" mat-flat-button (click)="nextQuestion()">Next</button>
+        <button class="next-buttons" mat-flat-button (click)="nextQuestion()" [disabled]="!options?.valid" [ngClass]="{
+            'btn-disabled':!options?.valid,
+            'btn-enabled':options?.valid
+         }">Next</button>
     </div>
     }
 </div>

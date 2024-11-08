@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './component/app-layout/default-layout/default-layout.component';
 import { InitialLayoutComponent } from './component/app-layout/initial-layout/initial-layout.component';
+// import { AuthGuard } from './services/auth-guard/auth.guard';
 
 const routes: Routes = [
   {
@@ -10,7 +11,8 @@ const routes: Routes = [
   },
   {
     path: 'questions',
-    component: DefaultLayoutComponent
+    component: DefaultLayoutComponent,
+    // canActivate: [AuthGuard]
   },
 ];
 

@@ -23,7 +23,7 @@ export class DataService {
   //   return this.http.get<any>(`${this.apiUrl}assistant/questions-and-answers/1`)
   // }
 
-  questionsAndAnswer(section_id :number): Observable<any> {
+  questionsAndAnswer(section_id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}assistant/questions-and-answers/${section_id}`)
   }
 
@@ -42,5 +42,11 @@ export class DataService {
     return this.http.post<any>(url, body)
   }
 
+  //open ai api call
+  aiQuestionLoading(section_id: any) {
+    const url = `${this.apiUrl}assistant/initiate-help/`;
+    const body = section_id;
+    return this.http.post<any>(url, body)
+  }
 
 }

@@ -1,16 +1,21 @@
 <div class="help-container">
-  <div class="next-button">
-    <button mat-flat-button>Help?</button> 
+  @if(offerAiHelp =='yes'){
+  <!-- <button class="help" mat-button>{{aiHelpButtonLabel}}</button> -->
+  <button class="help" mat-button (click)="getAiQuestion()">Assist Me</button>
+  
+  }
+  
+
+  <div class=" help_text">
     <h5 class="section-hints">About the section</h5>
-    <h5 class="section-hint">{{sectionHelp }}</h5> 
+    <h5 class="section-hint">{{sectionHelp }}</h5>
     <p></p>
     @if(questionHelp){
-      <h5 class="question-hint">About the question</h5>  
-      <!-- <p>{{questions[currentQuestionIndex]?.question_help }}</p> -->
-      <p>{{questionHelp}}</p>
+    <h5 class="question-hint">About the question</h5>
+    <!-- <p>{{questions[currentQuestionIndex]?.question_help }}</p> -->
+    <p>{{questionHelp}}</p>
     }
 
-</div>
-
   </div>
-    
+
+</div>

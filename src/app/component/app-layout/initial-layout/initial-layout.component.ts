@@ -41,6 +41,8 @@ export class InitialLayoutComponent {
       } catch (error) {
         // Token invalid or expired - continue with normal flow
         console.log('Session token invalid or expired');
+        console.warn("skjdfkjbk");
+        
       }
     }
   }

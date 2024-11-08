@@ -88,14 +88,16 @@ export class DynamicQuestionComponent {
 
     this.sharedService.sectionValue$.subscribe((sections: any) => {
       console.log("SECTION DETAILS:", sections);
+      this.currentQuestionIndex = 0 ; 
       this.section_number = sections.current_section_id;
       this.NextScreenSectionId = null
       this.getQuestionsAndAnswer();
       this.profileDetails = [];
       this.showSummaryScreenAdd = false;
-
-
+      
     });
+
+    
   }
 
   flattenOptions(options: { [optionId: number]: OptionData }): any[] {
@@ -205,6 +207,7 @@ export class DynamicQuestionComponent {
         const checkboxArray = this.formBuilder.array(
           field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
         );
+        
 
         const selectedOptions: any = [];
 
@@ -229,8 +232,11 @@ export class DynamicQuestionComponent {
         );
         this.options.addControl(field?.question_id?.toString(), checkboxArray);
       } else if (field.question_type === 'radioGroup') {
-        const selected = (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
-        this.options.addControl(field?.question_id?.toString(), new FormControl(selected));
+        const selected = this.getSelectedKey(field.options)
+        console.log(selected,"ffffffffffffffffffffff");
+        
+        // (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
+        this.options.addControl(field?.question_id?.toString(), new FormControl(selected?.toString()));
       } else {
         this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
       }
@@ -239,11 +245,21 @@ export class DynamicQuestionComponent {
     console.warn(data.section_id);
     console.warn('Questions', this.questions);
     console.warn('Form controls:', this.options);
+    console.warn('Profile Details:', this.profileDetails);
     this.questionloaded = true
     this.currentQuestionHelpUpdate();
     this.currentSectionHelpUpdate();
+    this.currentSectionAiUpdateButton()
   }
-  
+
+  getSelectedKey(options:any) {
+    for (const key in options) {
+        if (options[key].selected === "yes") {
+            return options[key]?.option_id.toString(); // Return the key where selected is "yes"
+        }
+    }
+    return null; // Return null if no selected option is found
+}
   data: any
   //get question api function
   getQuestionsAndAnswer(): void {
@@ -262,43 +278,50 @@ export class DynamicQuestionComponent {
   }
 
   //post api function for save form values
-
+  response:any
   saveAnswerValue(screenId: string, payload: any) {
+    debugger
     this.dataService.postTextAnswer(screenId, payload).subscribe((response) => {
-      console.log('Save response:', response);
+      console.log('Save response:', response); 
+      this.response = response;
       this.NextScreenSectionId = response?.['section_info']['next_section'] || null
       console.log(response?.['section_info']['next_section']);
       console.log(this.NextScreenSectionId);
+
       if (response.questions_and_answers) {
-        if (response.questions_and_answers.questions_changed == "yes") {
+        if (response.questions_and_answers.questions_changed == "no") {
           this.showSummaryScreenAdd = false;
           this.processQuestionsAndAnswerResponse(response.questions_and_answers);
         }
       }
+
       if (response.section_info.current_section_status === 'finished' &&
         !this.showSummaryScreenAdd &&
         this.questions[this.questions.length - 1]?.[0]?.question_type !== 'summary') {
         this.showSummaryScreenAdd = true;
         this.questions.push([{ question_type: "summary" }])
       }
-      console.warn(this.profileDetails, "yyyyyyyyyy");
 
     }, error => {
       console.error('Error submitting answer:', error);
     }
     );
   }
-
-
+   
   currentQuestionHelpUpdate() {
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
   }
 
-  currentSectionHelpUpdate() { 
+  currentSectionHelpUpdate() {
     const currentSectionHelp = this.data.section_help
     this.sharedService.sectiongHelpUpdate(currentSectionHelp)
+  }
+
+  currentSectionAiUpdateButton() {
+    const AiHelpButton = this.data.offer_ai_help
+    this.sharedService.sectionAiButtonUpdate(AiHelpButton)
   }
 
 
@@ -310,6 +333,8 @@ export class DynamicQuestionComponent {
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
+   
+
   }
 
   private updateQuestionIndex(): void {
@@ -429,6 +454,8 @@ export class DynamicQuestionComponent {
 
     console.log('Restructured payload:', JSON.stringify(answersPayload, null, 2));
     this.saveAnswerValue(screenId, answersPayload);
+    console.warn( "yyyyyyyyyy" ,this.profileDetails);
+ 
   }
 
   // isLastQuestion(): boolean {

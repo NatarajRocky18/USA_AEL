@@ -36,4 +36,11 @@ export class SharedService {
     this.section_value_change.next(value)
   }
 
+  private sectionAiButton = new Subject<any>();
+  sectionAiButton$ = this.sectionAiButton.asObservable();
+
+  sectionAiButtonUpdate(value:any){
+    this.sectionAiButton.next(value)
+  }
+
 }
