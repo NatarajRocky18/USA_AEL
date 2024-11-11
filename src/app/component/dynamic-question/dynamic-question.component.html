@@ -18,17 +18,17 @@
             *ngIf=" item.question_type === 'text' || item.question_type === 'address' || item.question_type === 'email' || item.question_type === 'phone'">
             <mat-form-field style="width: 300px;">
                 <mat-label>{{item?.['field prompt'] }}</mat-label>
-                <input matInput formControlName="{{item?.['question_id']}}" [required]="!item?.['optional']" />
+                <input matInput formControlName="{{item?.['question_id']}}" [required]="!item?.['optional'] && i ==currentQuestionIndex" />
             </mat-form-field>
         </ng-container>
 
         <ng-container *ngIf="item.question_type === 'radioGroup'">
             <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option"
-                [required]="!item?.['optional']" style="margin-left: 20px;">
+                [required]="!item?.['optional'] && i ==currentQuestionIndex" style="margin-left: 20px;">
                 <mat-radio-button *ngFor="let option of item.options" [value]="option.option_id">
                     {{ option.option_text }}
                 </mat-radio-button>
-            </mat-radio-group>
+            </mat-radio-group>  
         </ng-container>
 
 
@@ -47,7 +47,7 @@
             <mat-form-field style="width: 300px;">
                 <mat-label>{{item?.['field prompt'] }}</mat-label>
                 <input matInput [matDatepicker]="picker" placeholder="Choose a date"
-                    formControlName="{{item?.['question_id']}}" [required]="!item?.['optional']" />
+                    formControlName="{{item?.['question_id']}}" [required]="!item?.['optional'] && i ==currentQuestionIndex" />
                 <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker></mat-datepicker>
                 <mat-hint>MM/DD/YYYY</mat-hint>

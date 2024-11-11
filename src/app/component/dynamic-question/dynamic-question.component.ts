@@ -58,6 +58,7 @@ export class DynamicQuestionComponent {
   profileDetails: any = [];
   NextScreenSectionId: any = null;
   section_number: number = 1;
+  questionloaded = false;
 
   // Add this helper method to format dates
   formatDate(dateValue: any): string {
@@ -88,23 +89,25 @@ export class DynamicQuestionComponent {
 
     this.sharedService.sectionValue$.subscribe((sections: any) => {
       console.log("SECTION DETAILS:", sections);
-      this.currentQuestionIndex = 0 ; 
+      this.currentQuestionIndex = 0;
+      this.options.reset();
+      this.questionloaded=false;
       this.section_number = sections.current_section_id;
       this.NextScreenSectionId = null
       this.getQuestionsAndAnswer();
       this.profileDetails = [];
       this.showSummaryScreenAdd = false;
-      
+
     });
 
-    
+
   }
 
   flattenOptions(options: { [optionId: number]: OptionData }): any[] {
     const option_data: any[] = [];
     Object.entries(options).forEach(([optionId, option_details]) => {
       option_data.push({
-        option_id: optionId,
+        option_id: optionId.toString(),
         option_text: option_details.option_text,
         selected: option_details.selected
       });
@@ -112,7 +115,6 @@ export class DynamicQuestionComponent {
     return option_data;
   }
 
-  questionloaded = false;
 
   // Transform nested questions into flat array with screen_ids
   flattenQuestions(questions: { [key: string]: Question }): any[] {
@@ -162,8 +164,7 @@ export class DynamicQuestionComponent {
 
   processQuestionsAndAnswerResponse(data: any): void {
     const hasSummary = this.showSummaryScreenAdd;
-    const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;
-
+    const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;    
     this.options = this.formBuilder.group({});
     // Clear previous profile details to prevent duplicates
     this.profileDetails = [];
@@ -207,7 +208,7 @@ export class DynamicQuestionComponent {
         const checkboxArray = this.formBuilder.array(
           field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
         );
-        
+
 
         const selectedOptions: any = [];
 
@@ -233,15 +234,15 @@ export class DynamicQuestionComponent {
         this.options.addControl(field?.question_id?.toString(), checkboxArray);
       } else if (field.question_type === 'radioGroup') {
         const selected = this.getSelectedKey(field.options)
-        console.log(selected,"ffffffffffffffffffffff");
-        
+        console.log(selected, "selected value is ");
+
         // (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
-        this.options.addControl(field?.question_id?.toString(), new FormControl(selected?.toString()));
+        this.options.addControl(field?.question_id?.toString(), new FormControl(selected == null ? ""  : selected.toString()));
       } else {
         this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
       }
     });
-
+ 
     console.warn(data.section_id);
     console.warn('Questions', this.questions);
     console.warn('Form controls:', this.options);
@@ -252,14 +253,14 @@ export class DynamicQuestionComponent {
     this.currentSectionAiUpdateButton()
   }
 
-  getSelectedKey(options:any) {
+  getSelectedKey(options: any) {
     for (const key in options) {
-        if (options[key].selected === "yes") {
-            return options[key]?.option_id.toString(); // Return the key where selected is "yes"
-        }
+      if (options[key].selected === "yes") {
+        return options[key]?.option_id.toString(); // Return the key where selected is "yes"
+      }
     }
     return null; // Return null if no selected option is found
-}
+  }
   data: any
   //get question api function
   getQuestionsAndAnswer(): void {
@@ -278,36 +279,33 @@ export class DynamicQuestionComponent {
   }
 
   //post api function for save form values
-  response:any
+  response: any
   saveAnswerValue(screenId: string, payload: any) {
     debugger
     this.dataService.postTextAnswer(screenId, payload).subscribe((response) => {
-      console.log('Save response:', response); 
+
       this.response = response;
       this.NextScreenSectionId = response?.['section_info']['next_section'] || null
-      console.log(response?.['section_info']['next_section']);
-      console.log(this.NextScreenSectionId);
 
       if (response.questions_and_answers) {
-        if (response.questions_and_answers.questions_changed == "no") {
+        if (response.questions_and_answers.questions_changed == "yes") {
           this.showSummaryScreenAdd = false;
-          this.processQuestionsAndAnswerResponse(response.questions_and_answers);
         }
       }
 
-      if (response.section_info.current_section_status === 'finished' &&
-        !this.showSummaryScreenAdd &&
-        this.questions[this.questions.length - 1]?.[0]?.question_type !== 'summary') {
+      if (response?.['section_info'].current_section_status === 'finished') {
         this.showSummaryScreenAdd = true;
         this.questions.push([{ question_type: "summary" }])
       }
+
+      this.processQuestionsAndAnswerResponse(response.questions_and_answers);
 
     }, error => {
       console.error('Error submitting answer:', error);
     }
     );
   }
-   
+
   currentQuestionHelpUpdate() {
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
@@ -333,7 +331,7 @@ export class DynamicQuestionComponent {
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
-   
+
 
   }
 
@@ -454,8 +452,8 @@ export class DynamicQuestionComponent {
 
     console.log('Restructured payload:', JSON.stringify(answersPayload, null, 2));
     this.saveAnswerValue(screenId, answersPayload);
-    console.warn( "yyyyyyyyyy" ,this.profileDetails);
- 
+    console.warn("yyyyyyyyyy", this.profileDetails);
+
   }
 
   // isLastQuestion(): boolean {
