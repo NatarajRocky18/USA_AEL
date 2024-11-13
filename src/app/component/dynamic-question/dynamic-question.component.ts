@@ -151,7 +151,7 @@ export class DynamicQuestionComponent {
           screen_id: parentKey,
           question_type: question.question_type,
           'Question prompt': question.question_prompt,
-          'field prompt': question.question_prompt,
+          'field prompt': "",
           question_help: question.question_help,
           text_answer: question.text_answer,
           optional: question.optional,
@@ -190,7 +190,7 @@ export class DynamicQuestionComponent {
 
       let value: any = {}
       value['key'] = field.question_id
-      value['label'] = field?.['field prompt']
+      value['label'] = (field?.['field prompt'] != "") ? field?.['field prompt']: field?.['Question prompt']
       value['value'] = field.text_answer
       value['optionsKeys'] = false
 

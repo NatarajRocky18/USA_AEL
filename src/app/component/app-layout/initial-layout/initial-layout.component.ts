@@ -69,7 +69,7 @@ export class InitialLayoutComponent {
             this.formData.contactMethod,
             contactDetail
           ).toPromise();
-          this.studentId = lookupResult.student_id;
+          this.studentId = lookupResult.id;
         }
         await this.authService.initiateChallenge(this.studentId).toPromise();
       }

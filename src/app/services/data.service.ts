@@ -45,7 +45,9 @@ export class DataService {
   //open ai api call
   aiQuestionLoading(section_id: any) {
     const url = `${this.apiUrl}assistant/initiate-help/`;
-    const body = section_id;
+    const body = {
+      section_id: section_id
+    }
     return this.http.post<any>(url, body)
   }
 
