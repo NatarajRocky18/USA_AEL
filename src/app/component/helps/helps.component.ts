@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { DataService } from '../../services/data.service';
 import { SharedService } from '../../services/shared.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-helps',
@@ -8,7 +9,7 @@ import { SharedService } from '../../services/shared.service';
   styleUrl: './helps.component.scss'
 })
 export class HelpsComponent {
-  constructor(private dataService: DataService, private sharedService: SharedService) { }
+  constructor(private dataService: DataService, private sharedService: SharedService, private spinner: NgxSpinnerService) { }
   currentQuestionIndex = 0;
   sectionHelp: string = '';
   questions: any = [];
@@ -18,6 +19,7 @@ export class HelpsComponent {
   section_id: string = '';
 
   ngOnInit(): void {
+    this.getAiQuestion();
     this.getQuestionsAndAnswer();
     this.sharedService.questionHelpValue$.subscribe((helpText: string) => {
       this.questionHelp = helpText;
@@ -71,13 +73,21 @@ export class HelpsComponent {
 
   // get Ai questions
   aiQuestions: any
+  spinnerShow: boolean = false;
   getAiQuestion() {
+    this.spinnerShow = true;
+    this.spinner.show();
     this.dataService.aiQuestionLoading(this.section_id).subscribe((response) => {
+      this.sharedService.getAiQuestionsRes(response);
       this.aiQuestions = response;
       console.warn(this.aiQuestions, "answer ai values");
+      this.spinnerShow = false;
+      this.spinner.hide();
 
     }, error => {
       console.error("ai error response", error);
+      this.spinnerShow = false;
+      this.spinner.hide();
 
     })
   }

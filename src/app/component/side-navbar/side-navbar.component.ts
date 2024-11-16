@@ -18,7 +18,7 @@ export class SideNavbarComponent {
   ngOnInit(): void {
     this.getSectionProgress();
     this.sharedService.sideNavDataShare$.subscribe((res)=>
-      this.sectionProgressData = res 
+      this.sectionProgressData = res
     )
   }
 

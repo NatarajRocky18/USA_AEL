@@ -3,6 +3,7 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { SharedService } from '../../services/shared.service';
 import * as _ from 'lodash'
+import { NgxSpinnerService } from 'ngx-spinner';
 
 interface OptionData {
   option_text?: string;
@@ -40,6 +41,10 @@ interface AnswerValue {
   selected_option_id?: number;
   selected_option_ids?: number[];
 }
+
+interface SummaryData {
+  questions: { [key: string]: Question };
+}
 @Component({
   selector: 'app-dynamic-question',
   templateUrl: './dynamic-question.component.html',
@@ -49,7 +54,7 @@ interface AnswerValue {
 
 export class DynamicQuestionComponent {
 
-  constructor(private dataService: DataService, private sharedService: SharedService, private formBuilder: FormBuilder) { }
+  constructor(private spinner: NgxSpinnerService, private dataService: DataService, private sharedService: SharedService, private formBuilder: FormBuilder) { }
 
   options!: FormGroup;
   questions: any = [];
@@ -59,6 +64,8 @@ export class DynamicQuestionComponent {
   NextScreenSectionId: any = null;
   section_number: number = 1;
   questionloaded = false;
+  summaryLabelAndAnawer !: SummaryData;
+  allResponse: any;
 
   // Add this helper method to format dates
   formatDate(dateValue: any): string {
@@ -85,13 +92,25 @@ export class DynamicQuestionComponent {
   }
 
   ngOnInit(): void {
+
+    this.sharedService.aiQuestions$.subscribe((data) => {
+      // this.questions = data;
+      // this.options.reset();
+      // this.questionloaded = false;
+      // this.showSummaryScreenAdd = false;
+      this.processQuestionsAndAnswerResponse(data)
+      console.warn("ai shared value get", this.questions);
+    });
+
     this.getQuestionsAndAnswer();
 
     this.sharedService.sectionValue$.subscribe((sections: any) => {
       console.log("SECTION DETAILS:", sections);
       this.currentQuestionIndex = 0;
       this.options.reset();
-      this.questionloaded=false;
+      this.summaryLabelAndAnawer={questions:{}}
+      this.allResponse={}
+      this.questionloaded = false;
       this.section_number = sections.current_section_id;
       this.NextScreenSectionId = null
       this.getQuestionsAndAnswer();
@@ -99,7 +118,6 @@ export class DynamicQuestionComponent {
       this.showSummaryScreenAdd = false;
 
     });
-
 
   }
 
@@ -128,8 +146,11 @@ export class DynamicQuestionComponent {
           if (subQuestion.options) {
             option_data = this.flattenOptions(subQuestion.options);
           }
+          console.warn("question_id ",subQuestion);
+          
           flatQuestions.push({
             question_id: subKey,
+
             screen_id: parentKey, // Using parent key as screen_id
             question_type: subQuestion.question_type,
             'Question prompt': question.question_prompt,
@@ -164,7 +185,7 @@ export class DynamicQuestionComponent {
 
   processQuestionsAndAnswerResponse(data: any): void {
     const hasSummary = this.showSummaryScreenAdd;
-    const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;    
+    const summaryScreen = hasSummary ? this.questions[this.questions.length - 1] : null;
     this.options = this.formBuilder.group({});
     // Clear previous profile details to prevent duplicates
     this.profileDetails = [];
@@ -190,7 +211,7 @@ export class DynamicQuestionComponent {
 
       let value: any = {}
       value['key'] = field.question_id
-      value['label'] = (field?.['field prompt'] != "") ? field?.['field prompt']: field?.['Question prompt']
+      value['label'] = (field?.['field prompt'] != "") ? field?.['field prompt'] : field?.['Question prompt']
       value['value'] = field.text_answer
       value['optionsKeys'] = false
 
@@ -237,12 +258,12 @@ export class DynamicQuestionComponent {
         console.log(selected, "selected value is ");
 
         // (field.options.find((res: any) => res["selected"] == "yes"))?.['option_id'] || ''
-        this.options.addControl(field?.question_id?.toString(), new FormControl(selected == null ? ""  : selected.toString()));
+        this.options.addControl(field?.question_id?.toString(), new FormControl(selected == null ? "" : selected.toString()));
       } else {
         this.options.addControl(field?.question_id?.toString(), new FormControl(field?.['text_answer']));
       }
     });
- 
+
     console.warn(data.section_id);
     console.warn('Questions', this.questions);
     console.warn('Form controls:', this.options);
@@ -283,9 +304,16 @@ export class DynamicQuestionComponent {
   saveAnswerValue(screenId: string, payload: any) {
     debugger
     this.dataService.postTextAnswer(screenId, payload).subscribe((response) => {
+      this.summaryLabelAndAnawer = response.questions_and_answers;
+      this.allResponse = response;
+      console.warn("all response details", this.allResponse);
+
 
       this.response = response;
       this.NextScreenSectionId = response?.['section_info']['next_section'] || null
+
+      console.warn(response.questions_and_answers);
+
 
       if (response.questions_and_answers) {
         if (response.questions_and_answers.questions_changed == "yes") {
@@ -299,7 +327,8 @@ export class DynamicQuestionComponent {
       }
 
       this.processQuestionsAndAnswerResponse(response.questions_and_answers);
-
+      this.spinnerShow = false;
+      this.spinner.hide();
     }, error => {
       console.error('Error submitting answer:', error);
     }
@@ -427,8 +456,10 @@ export class DynamicQuestionComponent {
     }
   }
 
-
+  spinnerShow: boolean = false;
   nextQuestion(): void {
+    this.spinnerShow = true
+    this.spinner.show();
     this.updateQuestionIndex();
 
     const screenId = this.questions[this.currentQuestionIndex - 1]?.[0].screen_id;
@@ -453,16 +484,14 @@ export class DynamicQuestionComponent {
     console.log('Restructured payload:', JSON.stringify(answersPayload, null, 2));
     this.saveAnswerValue(screenId, answersPayload);
     console.warn("yyyyyyyyyy", this.profileDetails);
-
   }
-
-  // isLastQuestion(): boolean {
-  //   return this.currentQuestionIndex === this.questions.length;
-  // }
 
   moveToNextSection() {
     this.section_number = this.NextScreenSectionId
     this.currentQuestionIndex = 0;
+
+    this.summaryLabelAndAnawer={questions:{}}
+    this.allResponse?.section_info?.current_section_status ==="";
     this.getQuestionsAndAnswer()
     this.sharedService.sectionValueUpdate({ current_section_id: this.NextScreenSectionId });
     this.dataService.sectionProgress();
@@ -478,4 +507,31 @@ export class DynamicQuestionComponent {
 
     })
   }
+
+  RetrunSumaryKeyValue(options: any) {
+    let values: string[] = []; // Initialize as an array of strings
+  
+    for (const [key, value] of Object.entries(options)) {
+
+      // Type check for 'value'
+      if (typeof value === 'object' && value !== null && 'selected' in value && 'option_text' in value) {
+        const objectValues = (value as { selected: string, option_text: string }).selected;
+        if (objectValues === "yes") {
+          values.push((value as { selected: string, option_text: string }).option_text);
+        }
+      }
+    }
+    // Join the array elements into a single string separated by commas
+    const result = values.join(', ');
+    return result;
+  }
+  
+  checkQuestionValid(question : any = []){
+   return question.every((res:any)=>{
+    const control:FormControl = this.options.get(res.question_id) as FormControl
+    return this.options.controls[res.question_id]?.valid || control.valid
+
+   });
+  }
+
 }

@@ -15,11 +15,11 @@ export class SharedService {
     this.question_help.next(section);
   }
 
-  private sectionHelp = new Subject <any>();
+  private sectionHelp = new Subject<any>();
   sectionHelp$ = this.sectionHelp.asObservable();
 
-  sectiongHelpUpdate(section :any){
-   this.sectionHelp.next(section);
+  sectiongHelpUpdate(section: any) {
+    this.sectionHelp.next(section);
   }
 
   private section_status = new Subject<any>();
@@ -32,15 +32,23 @@ export class SharedService {
   private section_value_change = new Subject<any>();
   sideNavDataShare$ = this.section_value_change.asObservable();
 
-  sideNaveShareDataValue(value: any):any {
+  sideNaveShareDataValue(value: any): any {
     this.section_value_change.next(value)
   }
 
   private sectionAiButton = new Subject<any>();
   sectionAiButton$ = this.sectionAiButton.asObservable();
 
-  sectionAiButtonUpdate(value:any){
+  sectionAiButtonUpdate(value: any) {
     this.sectionAiButton.next(value)
   }
+
+  private aiQuestions = new Subject<any>();
+  aiQuestions$ = this.aiQuestions.asObservable();
+
+  getAiQuestionsRes(value: any) {
+    this.aiQuestions.next(value);
+  }
+
 
 }

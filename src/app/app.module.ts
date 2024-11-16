@@ -25,7 +25,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InitialLayoutComponent } from './component/app-layout/initial-layout/initial-layout.component';
-
+import { NgxSpinnerModule } from "ngx-spinner";
 
 
 @NgModule({
@@ -46,6 +46,7 @@ import { InitialLayoutComponent } from './component/app-layout/initial-layout/in
     RouterModule,
     RouterModule.forRoot([]),
     MatIconModule,
+    NgxSpinnerModule,
     HttpClientModule,
     MatMenuModule,
     MatFormFieldModule,

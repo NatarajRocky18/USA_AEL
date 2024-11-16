@@ -22,3 +22,9 @@
     .help_text{
         margin-top: 20px;
     }
+
+    ::ng-deep ngx-spinner {
+        position: fixed;
+        z-index: 9999;
+      }
+      
