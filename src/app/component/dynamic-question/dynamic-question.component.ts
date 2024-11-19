@@ -94,10 +94,6 @@ export class DynamicQuestionComponent {
   ngOnInit(): void {
 
     this.sharedService.aiQuestions$.subscribe((data) => {
-      // this.questions = data;
-      // this.options.reset();
-      // this.questionloaded = false;
-      // this.showSummaryScreenAdd = false;
       this.processQuestionsAndAnswerResponse(data)
       console.warn("ai shared value get", this.questions);
     });
@@ -108,8 +104,8 @@ export class DynamicQuestionComponent {
       console.log("SECTION DETAILS:", sections);
       this.currentQuestionIndex = 0;
       this.options.reset();
-      this.summaryLabelAndAnawer={questions:{}}
-      this.allResponse={}
+      this.summaryLabelAndAnawer = { questions: {} }
+      this.allResponse = {}
       this.questionloaded = false;
       this.section_number = sections.current_section_id;
       this.NextScreenSectionId = null
@@ -146,8 +142,8 @@ export class DynamicQuestionComponent {
           if (subQuestion.options) {
             option_data = this.flattenOptions(subQuestion.options);
           }
-          console.warn("question_id ",subQuestion);
-          
+          console.warn("question_id ", subQuestion);
+
           flatQuestions.push({
             question_id: subKey,
 
@@ -215,37 +211,37 @@ export class DynamicQuestionComponent {
       value['value'] = field.text_answer
       value['optionsKeys'] = false
 
-      if ((field.question_type === 'radioGroup')) {
-        value['type'] = field?.question_type
-        value['field'] = field
-        value['optionsKeys'] = true
-        value['value'] = field.selected_option_id
+      // if ((field.question_type === 'radioGroup')) {
+      //   value['type'] = field?.question_type
+      //   value['field'] = field
+      //   value['optionsKeys'] = true
+      //   value['value'] = field.selected_option_id
 
-      } else if (field.question_type === 'checkboxGroup') {
+      // } else if (field.question_type === 'checkboxGroup') {
 
-        value['type'] = field?.question_type
-        value['field'] = field
-        value['optionsKeys'] = true
-        const checkboxArray = this.formBuilder.array(
-          field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
-        );
+      //   value['type'] = field?.question_type
+      //   value['field'] = field
+      //   value['optionsKeys'] = true
+      //   const checkboxArray = this.formBuilder.array(
+      //     field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
+      //   );
 
 
-        const selectedOptions: any = [];
+      //   const selectedOptions: any = [];
 
-        checkboxArray.value.forEach((isSelected: any, index: any) => {
+      //   checkboxArray.value.forEach((isSelected: any, index: any) => {
 
-          if (isSelected) {
-            const option = field.options[index];
-            if (option) {
-              selectedOptions.push(option.option_text);
-            }
-          }
-        });
+      //     if (isSelected) {
+      //       const option = field.options[index];
+      //       if (option) {
+      //         selectedOptions.push(option.option_text);
+      //       }
+      //     }
+      //   });
 
-        value['selectedoptions'] = selectedOptions
+      //   value['selectedoptions'] = selectedOptions
 
-      }
+      // }
 
       this.profileDetails.push(value)
       if (field.question_type === 'checkboxGroup') {
@@ -269,6 +265,7 @@ export class DynamicQuestionComponent {
     console.warn('Form controls:', this.options);
     console.warn('Profile Details:', this.profileDetails);
     this.questionloaded = true
+    
     this.currentQuestionHelpUpdate();
     this.currentSectionHelpUpdate();
     this.currentSectionAiUpdateButton()
@@ -304,11 +301,10 @@ export class DynamicQuestionComponent {
   saveAnswerValue(screenId: string, payload: any) {
     debugger
     this.dataService.postTextAnswer(screenId, payload).subscribe((response) => {
+
       this.summaryLabelAndAnawer = response.questions_and_answers;
       this.allResponse = response;
       console.warn("all response details", this.allResponse);
-
-
       this.response = response;
       this.NextScreenSectionId = response?.['section_info']['next_section'] || null
 
@@ -317,7 +313,9 @@ export class DynamicQuestionComponent {
 
       if (response.questions_and_answers) {
         if (response.questions_and_answers.questions_changed == "yes") {
+          this.currentQuestionIndex = 0;
           this.showSummaryScreenAdd = false;
+          this.questionloaded = false
         }
       }
 
@@ -490,8 +488,8 @@ export class DynamicQuestionComponent {
     this.section_number = this.NextScreenSectionId
     this.currentQuestionIndex = 0;
 
-    this.summaryLabelAndAnawer={questions:{}}
-    this.allResponse?.section_info?.current_section_status ==="";
+    this.summaryLabelAndAnawer = { questions: {} }
+    this.allResponse?.section_info?.current_section_status === "";
     this.getQuestionsAndAnswer()
     this.sharedService.sectionValueUpdate({ current_section_id: this.NextScreenSectionId });
     this.dataService.sectionProgress();
@@ -510,7 +508,7 @@ export class DynamicQuestionComponent {
 
   RetrunSumaryKeyValue(options: any) {
     let values: string[] = []; // Initialize as an array of strings
-  
+
     for (const [key, value] of Object.entries(options)) {
 
       // Type check for 'value'
@@ -525,13 +523,13 @@ export class DynamicQuestionComponent {
     const result = values.join(', ');
     return result;
   }
-  
-  checkQuestionValid(question : any = []){
-   return question.every((res:any)=>{
-    const control:FormControl = this.options.get(res.question_id) as FormControl
-    return this.options.controls[res.question_id]?.valid || control.valid
 
-   });
+  checkQuestionValid(question: any = []) {
+    return question.every((res: any) => {
+      const control: FormControl = this.options.get(res.question_id) as FormControl
+      return this.options.controls[res.question_id]?.valid || control.valid
+
+    });
   }
 
 }

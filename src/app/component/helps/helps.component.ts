@@ -19,7 +19,6 @@ export class HelpsComponent {
   section_id: string = '';
 
   ngOnInit(): void {
-    this.getAiQuestion();
     this.getQuestionsAndAnswer();
     this.sharedService.questionHelpValue$.subscribe((helpText: string) => {
       this.questionHelp = helpText;
@@ -78,7 +77,7 @@ export class HelpsComponent {
     this.spinnerShow = true;
     this.spinner.show();
     this.dataService.aiQuestionLoading(this.section_id).subscribe((response) => {
-      this.sharedService.getAiQuestionsRes(response);
+      this.sharedService.getAiQuestionsResInHelpSection(response);
       this.aiQuestions = response;
       console.warn(this.aiQuestions, "answer ai values");
       this.spinnerShow = false;

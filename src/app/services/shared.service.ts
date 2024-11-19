@@ -46,7 +46,7 @@ export class SharedService {
   private aiQuestions = new Subject<any>();
   aiQuestions$ = this.aiQuestions.asObservable();
 
-  getAiQuestionsRes(value: any) {
+  getAiQuestionsResInHelpSection(value: any) {
     this.aiQuestions.next(value);
   }
 

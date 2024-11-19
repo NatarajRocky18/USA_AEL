@@ -91,7 +91,8 @@
           </ng-container>
 
           <!-- Handle the case where there are no questions (direct answers) -->
-          <ng-container *ngIf="!section.value.questions && section.value.question_type === 'text' || section.value.question_type ==='email' ||section.value.question_type ==='phone' || section.value.question_type === 'date'">
+          <ng-container
+            *ngIf="!section.value.questions && section.value.question_type === 'text' || section.value.question_type ==='email' ||section.value.question_type ==='phone' || section.value.question_type === 'date'">
             <div class="key-value-entry">
               <span class="key">{{ section.value.question_prompt | titlecase }}</span>
               <span class="value">{{ section.value.text_answer }}</span>
@@ -137,7 +138,8 @@
   <div class="next-button">
     <button class="previous-button" mat-button (click)="prevQuestion()"
       *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
-    <button class="next-buttons" mat-flat-button (click)="nextQuestion()" [disabled]="!checkQuestionValid(this.questions?.[currentQuestionIndex])" [ngClass]="{
+    <button class="next-buttons" mat-flat-button (click)="nextQuestion()"
+      [disabled]="!checkQuestionValid(this.questions?.[currentQuestionIndex])" [ngClass]="{
             'btn-disabled':!checkQuestionValid(this.questions?.[currentQuestionIndex]),
             'btn-enabled':checkQuestionValid(this.questions?.[currentQuestionIndex])
          }">Next</button>

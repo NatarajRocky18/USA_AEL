@@ -1,15 +1,13 @@
-
 <ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-spin" [fullScreen]="true"
-*ngIf="spinnerShow">
+  *ngIf="spinnerShow">
+  <p style="color: white"> Loading... </p>
 </ngx-spinner>
 <div class="help-container">
   @if(offerAiHelp =='yes'){
   <!-- <button class="help" mat-button>{{aiHelpButtonLabel}}</button> -->
   <button class="help" mat-button (click)="getAiQuestion()">Assist Me</button>
-  
-  }
-  
 
+  }
   <div class=" help_text">
     <h5 class="section-hints">About the section</h5>
     <h5 class="section-hint">{{sectionHelp }}</h5>

@@ -8,7 +8,7 @@ import { AuthService } from '../../../services/auth.service';
   styleUrl: './initial-layout.component.scss'
 })
 export class InitialLayoutComponent {
-   
+
   currentScreen = 1;
   formData = {
     applicationType: '',
@@ -22,17 +22,17 @@ export class InitialLayoutComponent {
   studentId: string = '';
 
 
-  constructor (
-    private router:Router,
+  constructor(
+    private router: Router,
     private authService: AuthService
-  ){}
+  ) { }
 
   async ngOnInit() {
     // Check for existing session token
     const sessionToken = this.authService.getSessionToken();
     console.log(sessionToken);
     if (sessionToken) {
-      
+
       try {
         // Try to lookup student with session token
         await this.authService.lookupBySessionToken(sessionToken).toPromise();
@@ -42,7 +42,7 @@ export class InitialLayoutComponent {
         // Token invalid or expired - continue with normal flow
         console.log('Session token invalid or expired');
         console.warn("skjdfkjbk");
-        
+
       }
     }
   }
@@ -50,15 +50,15 @@ export class InitialLayoutComponent {
   async next() {
     debugger
     if (!this.isCurrentStepValid()) {
-      alert("Please fill out the required fields");
+      // alert("Please fill out the required fields");
       return;
     }
-    const contactDetail = this.formData.contactMethod === 'phone' 
-    ? this.formData.phone 
-    : this.formData.email;
+    const contactDetail = this.formData.contactMethod === 'phone'
+      ? this.formData.phone
+      : this.formData.email;
     try {
       if (this.currentScreen == 3) {
-        if (this.formData.applicationType == "new" ) {
+        if (this.formData.applicationType == "new") {
           const createResult = await this.authService.createStudent(
             this.formData.contactMethod,
             contactDetail
@@ -75,7 +75,7 @@ export class InitialLayoutComponent {
       }
       this.currentScreen++;
       console.log(this.formData.applicationType);
-      console.log(this.formData.contactMethod);      
+      console.log(this.formData.contactMethod);
 
     } catch (err) {
       this.error = 'An error occurred. Please try again.';
@@ -120,11 +120,25 @@ export class InitialLayoutComponent {
   }
 
   isCurrentStepValid(): boolean {
-    if (this.currentScreen === 1 && !this.formData.applicationType) return false;
-    if (this.currentScreen === 2 && !this.formData.contactMethod) return false;
+    if (this.currentScreen === 1 && !this.formData.applicationType) {
+      alert('please select an application type.');
+      return false;
+    }
+
+    if (this.currentScreen === 2 && !this.formData.contactMethod) {
+      alert('please select a contact method.');
+      return false;
+    }
     if (this.currentScreen === 3) {
-      if (this.formData.contactMethod === 'phone' && !this.formData.phone) return false;
-      if (this.formData.contactMethod === 'email' && !this.formData.email) return false;
+      if (this.formData.contactMethod === 'phone' && !/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(this.formData.phone)) {
+        alert('Please enter a valid U.S. phone number.');
+        return false;
+      }
+
+      if (this.formData.contactMethod === 'email' && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.formData.email)) {
+        alert('Please enter a valid email address.');
+        return false;
+      }
     }
     return true;
   }
