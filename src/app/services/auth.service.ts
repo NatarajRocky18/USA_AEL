@@ -3,13 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { CookieService } from 'ngx-cookie-service';
+import {environment} from '../../environments/environment.dev'
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly SESSION_TOKEN_COOKIE = 'sessionToken';
-  private readonly API_BASE_URL = 'http://localhost:8000/assistant';
+  private readonly API_BASE_URL = environment.apiUrl;
+
 
   constructor(
     private http: HttpClient,

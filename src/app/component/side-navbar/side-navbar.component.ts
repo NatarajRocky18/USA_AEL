@@ -26,6 +26,7 @@ export class SideNavbarComponent {
   getSectionProgress(): void {
     this.dataService.sectionProgress().subscribe((data) => {
     this.sharedService.sideNaveShareDataValue(data)
+      console.warn(data);
       
       console.warn(this.sectionProgressData);
 

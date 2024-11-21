@@ -51,7 +51,6 @@ interface SummaryData {
   styleUrl: './dynamic-question.component.scss'
 })
 
-
 export class DynamicQuestionComponent {
 
   constructor(private spinner: NgxSpinnerService, private dataService: DataService, private sharedService: SharedService, private formBuilder: FormBuilder) { }
@@ -93,6 +92,28 @@ export class DynamicQuestionComponent {
 
   ngOnInit(): void {
 
+    this.sharedService.sideNavDataShare$.subscribe((res) => {
+      console.warn(res);
+
+      const inProgressSection = res.find((section: any) => section.status === 'in_progress');
+
+      if (inProgressSection) {
+        this.section_number = inProgressSection.section_id;
+        this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
+          this.data = data;
+          if (data && data.questions) {
+            this.processQuestionsAndAnswerResponse(data)
+          } else {
+            console.error('No questions found in the response:', data);
+            this.questions = [];
+          }
+        }, (error) => {
+          console.error('Error fetching questions:', error);
+        })
+      }
+
+    });
+
     this.sharedService.aiQuestions$.subscribe((data) => {
       this.processQuestionsAndAnswerResponse(data)
       console.warn("ai shared value get", this.questions);
@@ -128,7 +149,6 @@ export class DynamicQuestionComponent {
     })
     return option_data;
   }
-
 
   // Transform nested questions into flat array with screen_ids
   flattenQuestions(questions: { [key: string]: Question }): any[] {
@@ -211,39 +231,7 @@ export class DynamicQuestionComponent {
       value['value'] = field.text_answer
       value['optionsKeys'] = false
 
-      // if ((field.question_type === 'radioGroup')) {
-      //   value['type'] = field?.question_type
-      //   value['field'] = field
-      //   value['optionsKeys'] = true
-      //   value['value'] = field.selected_option_id
-
-      // } else if (field.question_type === 'checkboxGroup') {
-
-      //   value['type'] = field?.question_type
-      //   value['field'] = field
-      //   value['optionsKeys'] = true
-      //   const checkboxArray = this.formBuilder.array(
-      //     field.options?.map((option: any) => new FormControl(option["selected"] == "yes")) || []
-      //   );
-
-
-      //   const selectedOptions: any = [];
-
-      //   checkboxArray.value.forEach((isSelected: any, index: any) => {
-
-      //     if (isSelected) {
-      //       const option = field.options[index];
-      //       if (option) {
-      //         selectedOptions.push(option.option_text);
-      //       }
-      //     }
-      //   });
-
-      //   value['selectedoptions'] = selectedOptions
-
-      // }
-
-      this.profileDetails.push(value)
+      this.profileDetails.push(value);
       if (field.question_type === 'checkboxGroup') {
         const checkboxArray = this.formBuilder.array(
           field.options.map((option: any) => new FormControl(option["selected"] == "yes"))
@@ -265,7 +253,6 @@ export class DynamicQuestionComponent {
     console.warn('Form controls:', this.options);
     console.warn('Profile Details:', this.profileDetails);
     this.questionloaded = true
-    
     this.currentQuestionHelpUpdate();
     this.currentSectionHelpUpdate();
     this.currentSectionAiUpdateButton()
@@ -282,6 +269,7 @@ export class DynamicQuestionComponent {
   data: any
   //get question api function
   getQuestionsAndAnswer(): void {
+    
 
     this.dataService.questionsAndAnswer(this.section_number).subscribe((data) => {
       this.data = data;
@@ -310,7 +298,6 @@ export class DynamicQuestionComponent {
 
       console.warn(response.questions_and_answers);
 
-
       if (response.questions_and_answers) {
         if (response.questions_and_answers.questions_changed == "yes") {
           this.currentQuestionIndex = 0;
@@ -329,6 +316,9 @@ export class DynamicQuestionComponent {
       this.spinner.hide();
     }, error => {
       console.error('Error submitting answer:', error);
+      this.spinnerShow = false;
+      this.spinner.hide();
+
     }
     );
   }
@@ -349,8 +339,6 @@ export class DynamicQuestionComponent {
     this.sharedService.sectionAiButtonUpdate(AiHelpButton)
   }
 
-
-
   prevQuestion(): void {
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
@@ -358,7 +346,6 @@ export class DynamicQuestionComponent {
     const currentQuestion = this.questions[this.currentQuestionIndex]?.[0];
     const currentQuestionHelp = currentQuestion?.question_help;
     this.sharedService.questionHelpUpdate(currentQuestionHelp);
-
 
   }
 
@@ -531,5 +518,4 @@ export class DynamicQuestionComponent {
 
     });
   }
-
 }

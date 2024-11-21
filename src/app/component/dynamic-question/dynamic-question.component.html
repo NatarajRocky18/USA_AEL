@@ -9,7 +9,7 @@
     @for (items of questions; track $index;let i = $index;let outlooplast = $last) {
     <!-- To show only current screen id Question and to elmeinate other-->
 
-    @if (i ==currentQuestionIndex) {
+    @if (i == currentQuestionIndex) {
 
     <!-- take all the field and group it based on screen-->
     @for (item of items; track $index;let first =$first;let last =$last) {

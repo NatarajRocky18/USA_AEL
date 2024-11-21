@@ -18,7 +18,7 @@ export class SharedService {
   private sectionHelp = new Subject<any>();
   sectionHelp$ = this.sectionHelp.asObservable();
 
-  sectiongHelpUpdate(section: any) {
+  sectiongHelpUpdate(section: any) {  
     this.sectionHelp.next(section);
   }
 
