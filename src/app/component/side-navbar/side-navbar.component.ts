@@ -10,15 +10,24 @@ import { SharedService } from '../../services/shared.service';
 export class SideNavbarComponent {
 
   constructor(private dataService: DataService, private sharedService: SharedService) { }
+  
+  sectionProgressData: any[] = [];
+  questionAndOptionsData: any = []
+  selectedIndex: number | null = null;
+
   ngOnInit(): void {
     this.getSectionProgress();
+    this.sharedService.sideNavDataShare$.subscribe((res)=>
+      this.sectionProgressData = res
+    )
   }
 
-  sectionProgressData: any[] = [];
 
   getSectionProgress(): void {
     this.dataService.sectionProgress().subscribe((data) => {
-      this.sectionProgressData = data;
+    this.sharedService.sideNaveShareDataValue(data)
+      console.warn(data);
+      
       console.warn(this.sectionProgressData);
 
     }, (error) => {
@@ -26,9 +35,9 @@ export class SideNavbarComponent {
 
     })
   }
-
-  questionAndOptionsData: any = []
+  
   getSectionQuestionAndOptions(section: any, index: number): void {
+    this.selectedIndex = index;
     console.log(section);
 
     let nextIndex: number = index + 1
@@ -38,12 +47,11 @@ export class SideNavbarComponent {
     let obj = { "current_section_id": section.section_id, "next_sectionId": nextScreenSectionId }
     this.sharedService.sectionValueUpdate(obj);
 
+    // this.dataService.questionsAndAnswer(section.section_id).subscribe((data => {
+    //   this.questionAndOptionsData = data;
+    //   console.log(this.questionAndOptionsData);
 
-    this.dataService.questionsAndAnswer(section.section_id).subscribe((data => {
-      this.questionAndOptionsData = data;
-      console.log(this.questionAndOptionsData);
-
-    }))
+    // }))
   }
 
 

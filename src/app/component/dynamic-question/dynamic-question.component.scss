@@ -187,3 +187,14 @@ button.confirm-button {
     display: flex;
     flex-direction: column;
 }
+
+.btn-disabled{
+    background-color: rgb(168, 168, 168) !important ;
+    color: rgb(112, 109, 109) !important;
+    cursor: not-allowed;
+}
+.btn-enabled{
+    background-color: #eafcf7 !important;
+    color: white;
+    cursor: pointer;
+}

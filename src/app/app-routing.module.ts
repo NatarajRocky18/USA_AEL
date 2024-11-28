@@ -2,16 +2,18 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './component/app-layout/default-layout/default-layout.component';
 import { InitialLayoutComponent } from './component/app-layout/initial-layout/initial-layout.component';
+// import { AuthGuard } from './services/auth-guard/auth.guard';
 
 const routes: Routes = [
   {
-    path:'questions',
-    component:DefaultLayoutComponent
+    path: '',
+    component: InitialLayoutComponent
   },
   {
-    path:'',
-    component:InitialLayoutComponent
-  }
+    path: 'questions',
+    component: DefaultLayoutComponent,
+    // canActivate: [AuthGuard]
+  },
 ];
 
 @NgModule({

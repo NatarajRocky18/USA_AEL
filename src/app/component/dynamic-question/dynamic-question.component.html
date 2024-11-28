@@ -1,118 +1,150 @@
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="ball-spin" [fullScreen]="true"
+  *ngIf="spinnerShow">
+  <p style="color: white"> Loading... </p>
+</ngx-spinner>
+
 <div class="example-container">
-    @if(questionloaded){
-    <form [formGroup]="options">
-        @for (items of questions; track $index;let i =$index) {
-        <!-- To show only current screen id Question and to elmeinate other-->
+  @if(questionloaded){
+  <form [formGroup]="options" style="margin-top: 20px;">
+    @for (items of questions; track $index;let i = $index;let outlooplast = $last) {
+    <!-- To show only current screen id Question and to elmeinate other-->
 
-        @if (i ==currentQuestionIndex) {
+    @if (i == currentQuestionIndex) {
 
-        <!-- take all the field and group it based on screen-->
-        @for (item of items; track $index;let first =$first;let last =$last) {
-        <!-- Display for 1 only-->
-        @if(first){
-        <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] :
-            questions[i][0]?.['prompt']}}</p>
-        }
-
-        <ng-container
-            *ngIf=" item.question_type === 'text' || item.question_type === 'address' || item.question_type === 'email' || item.question_type === 'phone'">
-            <mat-form-field style="width: 300px;">
-                <mat-label>{{item?.['field prompt'] }}</mat-label>
-                <input matInput formControlName="{{item?.['question_id']}}" />
-            </mat-form-field>
-        </ng-container>
-
-        <ng-container *ngIf="item.question_type === 'radioGroup'">
-            <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option">
-                <mat-radio-button *ngFor="let option of item.options" [value]="option.option_id">
-                    {{ option.option_text }}
-                </mat-radio-button>
-            </mat-radio-group>
-        </ng-container>
-
-
-        <ng-container *ngIf="item.question_type === 'checkboxGroup'">
-            <div formGroupName="{{ item.question_id }}">
-                <div class="checkbox-column" *ngFor="let option of item.options; let i = index">
-                    <mat-checkbox [formControlName]="i">
-                        {{ option.option_text }}
-                    </mat-checkbox>
-                </div>
-            </div>
-        </ng-container>
-
-
-        <ng-container *ngIf="item.question_type === 'date'">
-            <mat-form-field style="width: 300px;">
-                <mat-label>{{item?.['field prompt'] }}</mat-label>
-                <input matInput [matDatepicker]="picker" placeholder="Choose a date"
-                    formControlName="{{item?.['question_id']}}" />
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-hint>MM/DD/YYYY</mat-hint>
-            </mat-form-field>
-        </ng-container>
-
-        <ng-container *ngIf="item.question_type === 'summary'">
-
-            <div class="summary-card">
-                <h2 class="summary-title"> Summary</h2>
-                <div class="key-value-container">
-
-                    @for (item of profileDetails; track $index) {
-
-                    @if (item.optionsKeys) {
-                    @if(item.type == "radioGroup"){
-                    @for (options of item.field.options ; track $index){
-                    @if(item.value == options.option_id ){
-                    <div class="key-value-entry">
-                        <span class="key">{{ item.label | titlecase }}</span>
-                        <span class="value"> {{ options.option_text }}</span>
-                    </div>
-                    }
-                    }
-                    }
-                    @if(item.type == "checkboxGroup"){
-                    <div class="key-value-entry">
-                        <span class="key">{{ item.label | titlecase }}</span>
-                        <span class="value"> {{ item.selectedoptions }}</span>
-                    </div>
-                    }
-                    }
-
-                    @if (!item.optionsKeys) {
-                    <div class="key-value-entry">
-                        <span class="key">{{ item.label | titlecase }}</span>
-                        <span class="value"> {{ item.value }}</span>
-                    </div>
-                    }
-                    }
-
-                    <div class="submit-details-heading">
-                        <p>Do you submit your details ?</p>
-                    </div>
-                    <div class="cancel-confirm-button">
-                        <button mat-flat-button color="warn" class="cancel-button" (click)="prevQuestion()">
-                            Cancel
-                        </button> &nbsp;
-                        <button mat-flat-button color="primary" class="confirm-button" (click)="moveToNextSection()">
-                            Confirm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </ng-container>
-        }
-        }
-        }
-
-    </form>
+    <!-- take all the field and group it based on screen-->
+    @for (item of items; track $index;let first =$first;let last =$last) {
+    <!-- Display for 1 only-->
+    @if(first){
+    <p>{{ questions[i][0]?.['Question prompt'] ? questions[i][0]?.['Question prompt'] :
+      questions[i][0]?.['prompt']}}</p>
     }
-    @if (!(this.questions?.[currentQuestionIndex]?.[0]?.['question_type'] == 'summary')) {
-    <div class="next-button">
-        <button class="previous-button" mat-button (click)="prevQuestion()"
-            *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
-        <button class="next-buttons" mat-flat-button (click)="nextQuestion()">Next</button>
+
+    <ng-container *ngIf=" item.question_type === 'text'">
+      <mat-form-field style="width: 300px;">
+        <mat-label>{{item?.['field prompt']||"Text Here" }}</mat-label>
+        <input matInput formControlName="{{item?.['question_id']}}"
+          [required]="!item?.['optional'] && i ==currentQuestionIndex" />
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf=" item.question_type === 'email'">
+      <mat-form-field style="width: 300px;">
+        <input matInput formControlName="{{item?.['question_id']}}"
+          [required]="!item?.['optional'] && i ==currentQuestionIndex" placeholder="Email *" />
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf=" item.question_type === 'phone'">
+      <mat-form-field style="width: 300px;">
+        <input matInput formControlName="{{item?.['question_id']}}"
+          [required]="!item?.['optional'] && i ==currentQuestionIndex" placeholder="Phone number *" />
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf="item.question_type === 'radioGroup'">
+     <div style="margin-left: 2%;">
+      <mat-radio-group formControlName="{{ item.question_id }}" aria-label="Select an option"
+      [required]="!item?.['optional'] && i ==currentQuestionIndex">
+      <mat-radio-button *ngFor="let option of item.options" [value]="option.option_id">
+        {{ option.option_text }}
+      </mat-radio-button>
+    </mat-radio-group>
+     </div>
+    </ng-container>
+
+
+    <ng-container *ngIf="item.question_type === 'checkboxGroup'">
+      <div formGroupName="{{ item.question_id }}">
+        <div class="checkbox-column" *ngFor="let option of item.options; let i = index">
+          <mat-checkbox [formControlName]="i">
+            {{ option.option_text }}
+          </mat-checkbox>
+        </div>
+      </div>
+    </ng-container>
+
+
+    <ng-container *ngIf="item.question_type === 'date'">
+      <mat-form-field style="width: 300px;">
+        <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="{{item?.['question_id']}}"
+          [required]="!item?.['optional'] && i ==currentQuestionIndex" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-hint>MM/DD/YYYY</mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+
+    @if(allResponse?.section_info?.current_section_status ==="finished" && outlooplast){
+    <div class="summary-card">
+      <h2 class="summary-title">Summary</h2>
+      <div class="key-value-container">
+
+        <ng-container *ngFor="let section of summaryLabelAndAnawer.questions | keyvalue">
+
+          <!-- Handle the case where there are questions -->
+          <ng-container *ngIf="section.value.questions">
+            <ng-container *ngFor="let question of section.value.questions | keyvalue">
+              <div class="key-value-entry">
+                <span class="key">{{ question.value.question_prompt | titlecase }}</span>
+                <span class="value">{{ question.value.text_answer }}</span>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Handle the case where there are no questions (direct answers) -->
+          <ng-container
+            *ngIf="!section.value.questions && section.value.question_type === 'text' || section.value.question_type ==='email' ||section.value.question_type ==='phone' || section.value.question_type === 'date'">
+            <div class="key-value-entry">
+              <span class="key">{{ section.value.question_prompt | titlecase }}</span>
+              <span class="value">{{ section.value.text_answer }}</span>
+            </div>
+          </ng-container>
+
+          <!-- For radioGroup and checkboxGroup, process the options -->
+          <ng-container
+            *ngIf="section.value.question_type === 'radioGroup' || section.value.question_type === 'checkboxGroup'">
+            <div class="key-value-entry">
+              <span class="key">{{ section.value.question_prompt | titlecase }}</span>
+              <span class="value">{{ RetrunSumaryKeyValue(section.value.options) }}</span>
+            </div>
+          </ng-container>
+
+        </ng-container>
+
+
+        <!-- Submit section -->
+        <div class="submit-details-heading">
+          <p>Do you submit your details?</p>
+        </div>
+        <div class="cancel-confirm-button">
+          <button mat-flat-button color="warn" class="cancel-button" (click)="prevQuestion()">
+            Cancel
+          </button> &nbsp;
+          <button mat-flat-button color="primary" class="confirm-button" (click)="moveToNextSection()">
+            Confirm
+          </button>
+        </div>
+      </div>
     </div>
+
     }
-</div>
+
+    }
+    }
+    }
+
+  </form>
+  }
+  @if (!(this.questions?.[currentQuestionIndex]?.[0]?.['question_type'] == 'summary')) {
+  <div class="next-button">
+    <button class="previous-button" mat-button (click)="prevQuestion()"
+      *ngIf="currentQuestionIndex > 0">Previous</button> &nbsp;
+    <button class="next-buttons" mat-flat-button (click)="nextQuestion()"
+      [disabled]="!checkQuestionValid(this.questions?.[currentQuestionIndex])" [ngClass]="{
+            'btn-disabled':!checkQuestionValid(this.questions?.[currentQuestionIndex]),
+            'btn-enabled':checkQuestionValid(this.questions?.[currentQuestionIndex])
+         }">Next</button>
+  </div>
+  }
+</div>`
